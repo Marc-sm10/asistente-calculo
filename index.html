@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Virtual de Cálculo y Precálculo</title>
+
+    <!-- jQuery (Requerido para MathQuill) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- MathQuill CSS y JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js"></script>
+
+    <!-- MathJax para Renderizado Matemático Formal -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Math.js para Evaluación y Análisis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+
+    <!-- FunctionPlot para Gráficas Interactivas -->
+    <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+    <script src="https://unpkg.com/function-plot@1/dist/function-plot.js"></script>
+
+    <style>
+        :root {
+            --primary: #0f172a;
+            --secondary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --accent: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* PANTALLA DE BIENVENIDA (LANDING) */
+        #welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 15px;
+        }
+
+        #welcome-screen h1 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            margin-bottom: 10px;
+        }
+
+        .meta-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 24px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+
+        .btn-enter {
+            background: var(--secondary);
+            color: white;
+            font-size: 1.1rem;
+            padding: 14px 35px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-enter:hover {
+            transform: translateY(-2px);
+            background: #1d4ed8;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 650px;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        /* APLICATIVO PRINCIPAL */
+        #main-app {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .btn-nav-home {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-nav-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .app-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* TECLADO SUPERIOR GENERAL */
+        .global-keyboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tool-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 10px 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #eff6ff;
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        .tool-btn.btn-clear {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .tool-btn.btn-clear:hover {
+            background: #fecaca;
+        }
+
+        /* ESPACIO DE TRABAJO Y ENTRADA */
+        .input-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        #math-field {
+            flex: 1;
+            min-width: 280px;
+            padding: 14px 18px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 1.4rem;
+            background: #fff;
+        }
+
+        /* CATEGORÍAS INFERIORES DE ACCIÓN */
+        .category-section {
+            margin-top: 10px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .cat-btn {
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .cat-btn:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        /* PESTAÑAS DE RESULTADOS */
+        .result-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            color: #64748b;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--secondary);
+            border-bottom-color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .step-box {
+            border-left: 4px solid var(--secondary);
+            background: #eff6ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+            overflow-x: auto;
+        }
+
+        .toggle-explanation {
+            background: none;
+            color: var(--secondary);
+            border: none;
+            padding: 0;
+            font-size: 0.85rem;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .explanation-text {
+            display: none;
+            font-size: 0.9rem;
+            color: #475569;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #cbd5e1;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="welcome-screen">
+        <h1>Asistente Virtual de Cálculo y Precálculo</h1>
+        <div class="meta-badge">
+            <strong>Universidad Mariano Gálvez de Guatemala</strong> | Facultad de Ingeniería<br>
+            Integrantes: Ricardo Marc Anderson Sanic Mejía & Allisson Andrea Arreaga Alonzo
+        </div>
+
+        <button class="btn-enter" onclick="iniciarApp()">INGRESAR AL ASISTENTE</button>
+
+        <div class="intro-card">
+            <h3 style="margin-top: 0; color: #60a5fa;">Ejemplo Introductorio / Prueba Oficial:</h3>
+            <p>Analiza $f(x)=x^{3}-6x^{2}+9x+1$; determina sus puntos críticos y clasifica sus extremos relativos.</p>
+            <button class="tool-btn"
+                style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none;"
+                onclick="probarEjemploOficial()">
+                Cargar Ejemplo en la Herramienta
+            </button>
+        </div>
+    </div>
+
+    <!-- APLICATIVO PRINCIPAL -->
+    <div id="main-app">
+        <header>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <button class="btn-nav-home" onclick="regresarMenu()">← Menú Principal</button>
+                <h2>Asistente Virtual de Cálculo y Precálculo</h2>
+            </div>
+            <div style="font-size: 0.85rem; opacity: 0.9;">
+                Precálculo / Cálculo | Sección A | Marc Sanic & Allisson Arreaga
+            </div>
+        </header>
+
+        <div class="app-container">
+
+            <!-- TECLADO GLOBAL SUPERIOR -->
+            <div class="card">
+                <h4 style="margin-top: 0; color: var(--secondary);">Teclado y Simbología General</h4>
+                <div class="global-keyboard">
+                    <button class="tool-btn" onclick="mqCommand('+')">+</button>
+                    <button class="tool-btn" onclick="mqCommand('-')">-</button>
+                    <button class="tool-btn" onclick="mqCommand('*')">×</button>
+                    <button class="tool-btn" onclick="mqWrite('\\frac{}{}')">a/b</button>
+                    <button class="tool-btn" onclick="mqTypedText('(')">(</button>
+                    <button class="tool-btn" onclick="mqTypedText(')')">)</button>
+                    <button class="tool-btn" onclick="mqTypedText('[')">[ ]</button>
+                    <button class="tool-btn" onclick="mqTypedText('{')">{ }</button>
+                    <button class="tool-btn" onclick="mqTypedText('x')">x</button>
+                    <button class="tool-btn" onclick="mqTypedText('y')">y</button>
+                    <button class="tool-btn" onclick="mqCmdPower('2')">x²</button>
+                    <button class="tool-btn" onclick="mqCmdPower('n')">xⁿ</button>
+                    <button class="tool-btn" onclick="mqWrite('\\sqrt{}')">√x</button>
+                    <button class="tool-btn" onclick="mqTypedText('f(x)')">f(x)</button>
+                    <button class="tool-btn" onclick="mqWrite('\\lim_{x \\to 0}')">lim</button>
+                    <button class="tool-btn" onclick="mqWrite('\\frac{d}{dx}')">d/dx</button>
+                    <button class="tool-btn" onclick="mqWrite('\\int')">∫</button>
+                    <button class="tool-btn btn-clear" onclick="limpiarTodo()">AC</button>
+                    <button class="tool-btn" onclick="borrarCaracter()">⌫</button>
+                </div>
+            </div>
+
+            <!-- ESPACIO DE TRABAJO CENTRAL -->
+            <div class="card">
+                <h3 style="margin-top: 0;">Espacio de Trabajo:</h3>
+
+                <div id="error-alert" class="alert-error"></div>
+
+                <div class="input-row">
+                    <span id="math-field"></span>
+                </div>
+
+                <!-- CATEGORÍAS INFERIORES SEPARADAS E INDEPENDIENTES -->
+                <div class="category-section">
+                    <label style="font-weight: bold; font-size: 0.9rem; color: #64748b;">Selecciona el modo de
+                        resolución:</label>
+                    <div class="category-grid">
+                        <button class="cat-btn" onclick="resolverOperacion('aritmetica')">Aritmética</button>
+                        <button class="cat-btn" onclick="resolverOperacion('algebra')">Álgebra</button>
+                        <button class="cat-btn" onclick="resolverOperacion('funciones')">Funciones</button>
+                        <button class="cat-btn" onclick="resolverOperacion('limites')">Límites</button>
+                        <button class="cat-btn" onclick="resolverOperacion('derivadas')">Derivadas</button>
+                        <button class="cat-btn" onclick="resolverOperacion('integrales')">Integrales</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN DE RESULTADOS -->
+            <div id="result-card" class="card result-section">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('pasos')">Procedimiento Paso a Paso</button>
+                    <button class="tab-btn" onclick="switchTab('formulas')">Fórmulas Utilizadas</button>
+                    <button class="tab-btn" onclick="switchTab('grafica')">Gráfica</button>
+                </div>
+
+                <!-- Tab Pasos -->
+                <div id="tab-pasos" class="tab-content">
+                    <h4>Procedimiento:</h4>
+                    <div id="procedure-container"></div>
+                    <div
+                        style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                        <strong style="color: #166534;">Respuesta Final:</strong>
+                        <div id="final-answer" style="font-size: 1.2rem; margin-top: 5px; overflow-x: auto;"></div>
+                    </div>
+                </div>
+
+                <!-- Tab Fórmulas -->
+                <div id="tab-formulas" class="tab-content" style="display: none;">
+                    <h4>Fórmulas Aplicadas:</h4>
+                    <div id="formulas-container"></div>
+                </div>
+
+                <!-- Tab Gráfica -->
+                <div id="tab-grafica" class="tab-content" style="display: none;">
+                    <h4>Representación Visual:</h4>
+                    <div id="plot" style="width: 100%; height: 320px;"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        var MQ = MathQuill.getInterface(2);
+        var mathFieldSpan = document.getElementById('math-field');
+        var mathField = MQ.MathField(mathFieldSpan, {
+            spaceBehavesLikeTab: true
+        });
+
+        function iniciarApp() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            mathField.focus();
+        }
+
+        function regresarMenu() {
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'flex';
+        }
+
+        function probarEjemploOficial() {
+            iniciarApp();
+            mathField.latex("x^3-6x^2+9x+1");
+            resolverOperacion('derivadas');
+        }
+
+        function mqTypedText(text) {
+            mathField.typedText(text);
+            mathField.focus();
+        }
+
+        function mqCommand(cmd) {
+            mathField.cmd(cmd);
+            mathField.focus();
+        }
+
+        function mqWrite(latexStr) {
+            mathField.write(latexStr);
+            mathField.focus();
+        }
+
+        function mqCmdPower(exp) {
+            mathField.typedText('^' + exp);
+            mathField.focus();
+        }
+
+        function limpiarTodo() {
+            mathField.latex('');
+            document.getElementById('result-card').style.display = 'none';
+            ocultarError();
+            mathField.focus();
+        }
+
+        function borrarCaracter() {
+            mathField.keystroke('Backspace');
+            mathField.focus();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        function toggleExplicacion(id) {
+            const exp = document.getElementById('exp-' + id);
+            exp.style.display = exp.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function mostrarError(msg) {
+            const alert = document.getElementById('error-alert');
+            alert.innerText = msg;
+            alert.style.display = 'block';
+            document.getElementById('result-card').style.display = 'none';
+        }
+
+        function ocultarError() {
+            document.getElementById('error-alert').style.display = 'none';
+        }
+
+        // NORMALIZADOR AVANZADO PARA TRADUCIR LATEX Y SÍMBOLOS A MATH.JS
+        function normalizarExpresion(rawInput, latexInput) {
+            let clean = (latexInput || rawInput || '')
+                .replace(/f\s*\(\s*x\s*\)\s*=?/gi, '')
+                .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '(\$1)/($2)').replace(/\\sqrt\{([^}]+)\}/g, 'sqrt($1)')
+                .replace(/\\left|\\right/g, '')
+                .replace(/\^\{(\d+)\}/g, '^\$1')
+                .replace(/\{(\d+)\}/g, '\$1')
+                .replace(/[\{\}]/g, '')
+                .replace(/\\cdot/g, '*')
+                .replace(/\\times/g, '*')
+                .replace(/\s+/g, '')
+                .trim();
+
+            // Inserción de multiplicación implícita (ej. 2x -> 2*x, 5(x) -> 5*(x))
+            clean = clean.replace(/(\d)([a-zA-Z\(])/g, '\$1*\$2'); clean = clean.replace(/(\))([a-zA-Z0-9\(])/g, '\$1*\$2');
+
+            return clean;
+        }
+
+        // MOTOR SIMBÓLICO DE INTEGRACIÓN POLINÓMICA CÁLCULO
+        function integrarSimbilico(cleanInput) {
+            try {
+                const node = math.parse(cleanInput);
+
+                // Integrador por términos polinómicos
+                function integrarNodo(n) {
+                    if (n.isSymbolNode && n.name === 'x') {
+                        return '\\frac{x^2}{2}';
+                    }
+                    if (n.isConstantNode) {
+                        return `${n.value}x`;
+                    }
+                    if (n.isOperatorNode) {
+                        if (n.isBinary() && n.op === '^' && n.args[0].isSymbolNode && n.args[0].name === 'x' && n.args[1].isConstantNode) {
+                            const exp = n.args[1].value;
+                            const nuevoExp = exp + 1;
+                            return `\\frac{x^{${nuevoExp}}}{${nuevoExp}}`;
+                        }
+                        if (n.isBinary() && n.op === '*' && n.args[0].isConstantNode) {
+                            const coef = n.args[0].value;
+                            const subInt = integrarNodo(n.args[1]);
+                            return `${coef} \\cdot \\left(${subInt}\\right)`;
+                        }
+                        if (n.isBinary() && (n.op === '+' || n.op === '-')) {
+                            return `${integrarNodo(n.args[0])} ${n.op} ${integrarNodo(n.args[1])}`;
+                        }
+                    }
+                    return `\\int (${n.toTex()}) dx`;
+                }
+
+                return integrarNodo(node) + ' + C';
+            } catch (e) {
+                return `\\int (${cleanInput}) dx + C`;
+            }
+        }
+
+        function resolverOperacion(categoria) {
+            ocultarError();
+            const latexInput = mathField.latex();
+            const plainInput = mathField.text();
+
+            const cleanInput = normalizarExpresion(plainInput, latexInput);
+
+            if (!cleanInput) {
+                mostrarError("Por favor, ingresa una expresión en el espacio de trabajo.");
+                return;
+            }
+
+            try {
+                document.getElementById('result-card').style.display = 'block';
+
+                // 1. MÓDULO ARITMÉTICA
+                if (categoria === 'aritmetica') {
+                    const resultado = math.evaluate(cleanInput);
+                    document.getElementById('procedure-container').innerHTML = `
+            <div class="step-box">
+              <strong>Paso 1: Evaluación Aritmética Directa</strong>
+              <div>\\[ ${latexInput || cleanInput} = ${resultado} \\]</div>
+              <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
+              <div id="exp-1" class="explanation-text">Se calcula el valor numérico siguiendo la jerarquía de operaciones básicas.</div>
+            </div>
+          `;
+                    document.getElementById('final-answer').innerHTML = `\\[ ${resultado} \\]`;
+                    document.getElementById('formulas-container').innerHTML = `<p>Aritmética básica y jerarquía de operadores.</p>`;
+                    document.getElementById('plot').innerHTML = "<p style='color: #64748b; padding: 20px;'>No hay gráfica disponible para valores aritméticos.</p>";
+
+                    // 2. MÓDULO ÁLGEBRA
+                } else if (categoria === 'algebra') {
+                    const difCuadradosMatch = cleanInput.match(/^x\^2-(\d+)\$/i);
+
+                    if (difCuadradosMatch) {
+                        const num = parseInt(difCuadradosMatch[1]);
+                        const raizNum = Math.sqrt(num);
+
+                        document.getElementById('procedure-container').innerHTML = `
+              <div class="step-box">
+                <strong>Paso 1: Identificar el caso de factorización (Diferencia de Cuadrados)</strong>
+                <div>\\[ x^2 - ${num} = (x - ${raizNum})(x + ${raizNum}) \\]</div>
+                <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
+                <div id="exp-1" class="explanation-text">Se aplica la identidad \\(a^2 - b^2 = (a-b)(a+b)\\) donde \\(a = x\\) y \\(b = \\sqrt{${num}} = ${raizNum}\\).</div>
+              </div>
+
+              <div class="step-box">
+                <strong>Paso 2: Hallar los valores de $x$ (Igualar a cero)</strong>
+                <div>\\[ x^2 - ${num} = 0 \\implies x_1 = ${raizNum}, \\quad x_2 = -${raizNum} \\]</div>
+                <button class="toggle-explanation" onclick="toggleExplicacion(2)">¿Qué se hizo aquí?</button>
+                <div id="exp-2" class="explanation-text">Se despeja \\(x\\) para obtener las raíces o ceros exactos de la ecuación algebraica.</div>
+              </div>
+            `;
+
+                        document.getElementById('final-answer').innerHTML = `
+              <div><strong>Factorización:</strong> \\[ (x - ${raizNum})(x + ${raizNum}) \\]</div>
+              <div><strong>Valores de $x$ (Raíces):</strong> \\[ x_1 = ${raizNum}, \\quad x_2 = -${raizNum} \\]</div>
+            `;
+                    } else {
+                        const node = math.parse(cleanInput);
+                        document.getElementById('procedure-container').innerHTML = `
+              <div class="step-box">
+                <strong>Paso 1: Simplificación y Expresión Algebraica</strong>
+                <div>\\[ ${node.toTex()} \\]</div>
+              </div>
+            `;
+                        document.getElementById('final-answer').innerHTML = `\\[ ${node.toTex()} \\]`;
+                    }
+
+                    document.getElementById('formulas-container').innerHTML = `<ul><li>Identidades algebraicas y productos notables.</li></ul>`;
+                    functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
+
+                    // 3. MÓDULO FUNCIONES
+                } else if (categoria === 'funciones') {
+                    const node = math.parse(cleanInput);
+
+                    document.getElementById('procedure-container').innerHTML = `
+            <div class="step-box">
+              <strong>Paso 1: Definición de la Función</strong>
+              <div>\\[ f(x) = ${node.toTex()} \\]</div>
+              <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
+              <div id="exp-1" class="explanation-text">Se registra la función matemática ingresada para su estudio de dominio, rango y tabulación.</div>
+            </div>
+            <div class="step-box">
+              <strong>Paso 2: Evaluación en puntos clave ($x = 0, 1, 2$)</strong>
+              <div>\\(f(0) = ${math.evaluate(cleanInput, { x: 0 })}\\), \\(f(1) = ${math.evaluate(cleanInput, { x: 1 })}\\), \\(f(2) = ${math.evaluate(cleanInput, { x: 2 })}\\)</div>
+            </div>
+          `;
+
+                    document.getElementById('final-answer').innerHTML = `\\[ f(x) = ${node.toTex()} \\] (Función Analizada)`;
+                    document.getElementById('formulas-container').innerHTML = `<p>Evaluación de funciones, dominio y representación gráfica.</p>`;
+                    functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
+
+                    // 4. MÓDULO DERIVADAS
+                } else if (categoria === 'derivadas') {
+                    const node = math.parse(cleanInput);
+                    const derivada = math.derivative(node, 'x');
+
+                    document.getElementById('procedure-container').innerHTML = `
+            <div class="step-box">
+              <strong>Paso 1: Plantear la derivada</strong>
+              <div>\\[ \\frac{d}{dx} \\left[ ${node.toTex()} \\right] \\]</div>
+            </div>
+            <div class="step-box">
+              <strong>Paso 2: Resultado de la Derivada</strong>
+              <div>\\[ f'(x) = ${derivada.toTex()} \\]</div>
+              <button class="toggle-explanation" onclick="toggleExplicacion(2)">¿Qué se hizo aquí?</button>
+              <div id="exp-2" class="explanation-text">Se aplica la regla de la potencia \\(\\frac{d}{dx}[x^n] = n x^{n-1}\\) término a término.</div>
+            </div>
+          `;
+
+                    document.getElementById('final-answer').innerHTML = `\\[ f'(x) = ${derivada.toTex()} \\]`;
+                    document.getElementById('formulas-container').innerHTML = `<ul><li>Regla de la potencia: \\(\\frac{d}{dx}[x^n] = n x^{n-1}\\)</li></ul>`;
+                    functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
+
+                    // 5. MÓDULO INTEGRALES (MOTOR DINÁMICO)
+                } else if (categoria === 'integrales') {
+                    const node = math.parse(cleanInput);
+                    const resIntegral = integrarSimbilico(cleanInput);
+
+                    document.getElementById('procedure-container').innerHTML = `
+            <div class="step-box">
+              <strong>Paso 1: Plantear la integral indefinida</strong>
+              <div>\\[ \\int \\left( ${node.toTex()} \\right) dx \\]</div>
+              <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
+              <div id="exp-1" class="explanation-text">Se aplica el operador de integración indefinida a la función polinómica.</div>
+            </div>
+            <div class="step-box">
+              <strong>Paso 2: Integración término a término</strong>
+              <div>\\[ \\int f(x) dx = ${resIntegral} \\]</div>
+              <button class="toggle-explanation" onclick="toggleExplicacion(2)">¿Qué se hizo aquí?</button>
+              <div id="exp-2" class="explanation-text">Se integra cada término mediante la regla \\(\\int x^n dx = \\frac{x^{n+1}}{n+1} + C\\).</div>
+            </div>
+          `;
+
+                    document.getElementById('final-answer').innerHTML = `\\[ \\int f(x) dx = ${resIntegral} \\]`;
+                    document.getElementById('formulas-container').innerHTML = `<ul><li>Regla de la potencia para integración: \\(\\int x^n dx = \\frac{x^{n+1}}{n+1} + C\\)</li></ul>`;
+                    functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
+
+                    // 6. MÓDULO LÍMITES
+                } else if (categoria === 'limites') {
+                    const node = math.parse(cleanInput);
+                    document.getElementById('procedure-container').innerHTML = `
+            <div class="step-box">
+              <strong>Paso 1: Evaluación del límite ($x \\to 0$)</strong>
+              <div>\\[ \\lim_{x \\to 0} \\left( ${node.toTex()} \\right) = ${math.evaluate(cleanInput, { x: 0 })} \\]</div>
+            </div>
+          `;
+                    document.getElementById('final-answer').innerHTML = `\\[ \\lim_{x \\to 0} f(x) = ${math.evaluate(cleanInput, { x: 0 })} \\]`;
+                    document.getElementById('formulas-container').innerHTML = `<p>Teoremas de límites y continuidad.</p>`;
+                    functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
+                }
+
+                MathJax.typesetPromise();
+
+            } catch (err) {
+                mostrarError("Error al procesar la expresión. Verifica los datos ingresados.");
+            }
+        }
+    </script>
+</body>
+
+</html>
