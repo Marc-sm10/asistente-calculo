@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathAssistant Pro - Asistente de Pre-Cálculo & Cálculo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax para Renderizado LaTeX -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Math.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <!-- Algebrite -->
+    <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.js"></script>
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .latex-display { overflow-x: auto; padding: 0.5rem 0; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
+    </style>
+</head>
+<body class="text-slate-800 font-sans pb-12">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                    <i data-lucide="calculator" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">MathAssistant Pro</h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Pre-Cálculo & Cálculo | UMG</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="openModal('infoModal')" class="px-3 py-1.5 text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4"></i> INFORMACIÓN
+                </button>
+                <button onclick="openModal('examplesModal')" class="px-3 py-1.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition flex items-center gap-1.5">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> EJEMPLOS INTRODUCTORIOS
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        
+        <!-- Category Selector Grid -->
+        <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/50 mb-6 backdrop-blur-sm">
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5" id="categoryTabs">
+                <button onclick="setCategory('aritmetica')" id="tab-aritmetica" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg text-slate-300 hover:bg-slate-800 transition text-center flex flex-col items-center gap-1">
+                    <i data-lucide="plus-slash-minus" class="w-4 h-4"></i> ARITMÉTICA
+                </button>
+                <button onclick="setCategory('algebra')" id="tab-algebra" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg text-slate-300 hover:bg-slate-800 transition text-center flex flex-col items-center gap-1">
+                    <i data-lucide="variable" class="w-4 h-4"></i> ÁLGEBRA
+                </button>
+                <button onclick="setCategory('funciones')" id="tab-funciones" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg text-slate-300 hover:bg-slate-800 transition text-center flex flex-col items-center gap-1">
+                    <i data-lucide="line-chart" class="w-4 h-4"></i> FUNCIONES
+                </button>
+                <button onclick="setCategory('limites')" id="tab-limites" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg text-slate-300 hover:bg-slate-800 transition text-center flex flex-col items-center gap-1">
+                    <i data-lucide="arrow-right-to-line" class="w-4 h-4"></i> LÍMITES
+                </button>
+                <button onclick="setCategory('derivadas')" id="tab-derivadas" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg text-slate-300 hover:bg-slate-800 transition text-center flex flex-col items-center gap-1">
+                    <i data-lucide="trending-up" class="w-4 h-4"></i> DERIVADAS
+                </button>
+                <button onclick="setCategory('integrales')" id="tab-integrales" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg text-slate-300 hover:bg-slate-800 transition text-center flex flex-col items-center gap-1">
+                    <i data-lucide="sigma" class="w-4 h-4"></i> INTEGRALES
+                </button>
+                <button onclick="setCategory('aplicaciones')" id="tab-aplicaciones" class="tab-btn px-3 py-2 text-xs font-semibold rounded-lg text-slate-300 hover:bg-slate-800 transition text-center flex flex-col items-center gap-1">
+                    <i data-lucide="lightbulb" class="w-4 h-4"></i> APLICACIONES
+                </button>
+            </div>
+        </div>
+
+        <!-- Assistant Main Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Panel: Input & Math Keyboard -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Input Box Card -->
+                <div class="glass-card rounded-2xl p-5 shadow-2xl border border-slate-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <span id="categoryLabel" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-md">
+                            Cargando...
+                        </span>
+                        <span class="text-xs text-slate-500">Sintaxis flexible</span>
+                    </div>
+
+                    <!-- Dynamic Controls Area -->
+                    <div id="dynamicControls" class="space-y-3 mb-4">
+                        <!-- Dynamic inputs load here -->
+                    </div>
+
+                    <!-- Main Expression Input -->
+                    <div class="relative">
+                        <label for="mathInput" class="block text-xs font-medium text-slate-600 mb-1">Expresión o Ejercicio:</label>
+                        <input type="text" id="mathInput" placeholder="Ej: x^2 - 4 = 0" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-base shadow-sm transition">
+                    </div>
+
+                    <!-- Virtual Mathematical Keyboard -->
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                                <i data-lucide="keyboard" class="w-3.5 h-3.5"></i> Teclado Matemático
+                            </span>
+                            <span class="text-[10px] text-slate-400">Clic para insertar</span>
+                        </div>
+                        <div class="grid grid-cols-6 gap-1 bg-slate-100 p-2 rounded-xl border border-slate-200">
+                            <button onclick="insertMath('x')" class="p-2 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">x</button>
+                            <button onclick="insertMath('i')" class="p-2 text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 rounded font-bold shadow-sm border border-amber-200">i</button>
+                            <button onclick="insertMath('^2')" class="p-2 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">x²</button>
+                            <button onclick="insertMath('^')" class="p-2 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">xⁿ</button>
+                            <button onclick="insertMath('sqrt(')" class="p-2 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">√</button>
+                            <button onclick="insertMath('pi')" class="p-2 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">π</button>
+
+                            <button onclick="insertMath('+')" class="p-2 text-xs bg-slate-200 hover:bg-slate-300 rounded font-bold text-slate-700 shadow-sm">+</button>
+                            <button onclick="insertMath('-')" class="p-2 text-xs bg-slate-200 hover:bg-slate-300 rounded font-bold text-slate-700 shadow-sm">-</button>
+                            <button onclick="insertMath('*')" class="p-2 text-xs bg-slate-200 hover:bg-slate-300 rounded font-bold text-slate-700 shadow-sm">*</button>
+                            <button onclick="insertMath('/')" class="p-2 text-xs bg-slate-200 hover:bg-slate-300 rounded font-bold text-slate-700 shadow-sm">/</button>
+                            <button onclick="insertMath('=')" class="p-2 text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded font-bold shadow-sm">=</button>
+                            <button onclick="insertMath('<')" class="p-2 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded font-bold shadow-sm">&lt;</button>
+
+                            <button onclick="insertMath('>')" class="p-2 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded font-bold shadow-sm">&gt;</button>
+                            <button onclick="insertMath('<=')" class="p-2 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded font-bold shadow-sm">≤</button>
+                            <button onclick="insertMath('>=')" class="p-2 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded font-bold shadow-sm">≥</button>
+                            <button onclick="insertMath('e')" class="p-2 text-xs bg-white hover:bg-indigo-50 hover:text-indigo-600 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">e</button>
+                            <button onclick="insertMath('(')" class="p-2 text-xs bg-slate-200 hover:bg-slate-300 rounded font-bold text-slate-700 shadow-sm">(</button>
+                            <button onclick="insertMath(')')" class="p-2 text-xs bg-slate-200 hover:bg-slate-300 rounded font-bold text-slate-700 shadow-sm">)</button>
+
+                            <button onclick="insertMath('sin(')" class="p-2 text-xs bg-white hover:bg-indigo-50 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">sin</button>
+                            <button onclick="insertMath('cos(')" class="p-2 text-xs bg-white hover:bg-indigo-50 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">cos</button>
+                            <button onclick="insertMath('tan(')" class="p-2 text-xs bg-white hover:bg-indigo-50 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">tan</button>
+                            <button onclick="insertMath('log(')" class="p-2 text-xs bg-white hover:bg-indigo-50 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">log</button>
+                            <button onclick="insertMath('ln(')" class="p-2 text-xs bg-white hover:bg-indigo-50 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">ln</button>
+                            <button onclick="insertMath('infinity')" class="p-2 text-xs bg-white hover:bg-indigo-50 rounded font-semibold text-slate-700 shadow-sm border border-slate-200">∞</button>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button onclick="processExercise()" class="w-full mt-5 py-3.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition flex items-center justify-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i> Resolver Paso a Paso
+                    </button>
+                </div>
+
+                <!-- Graphing Section -->
+                <div id="graphCard" class="glass-card rounded-2xl p-5 shadow-2xl border border-slate-200 hidden">
+                    <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <i data-lucide="line-chart" class="w-4 h-4 text-indigo-600"></i> Visualización en Plano Cartesiano
+                    </h3>
+                    <div id="plotlyChart" class="w-full h-64 bg-slate-50 rounded-xl overflow-hidden border border-slate-200"></div>
+                    <div id="graphAnalysis" class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+                        <!-- Graph insights -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Panel: Step-by-Step Procedure -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="glass-card rounded-2xl p-6 shadow-2xl border border-slate-200 min-h-[500px]">
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-6">
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="list-checks" class="w-5 h-5 text-indigo-600"></i> Procedimiento & Solución
+                        </h2>
+                        <span id="statusBadge" class="text-xs px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">Esperando ejercicio...</span>
+                    </div>
+
+                    <!-- Steps Output Container -->
+                    <div id="solutionSteps" class="space-y-6">
+                        <div class="text-center py-16 text-slate-400">
+                            <i data-lucide="calculator" class="w-12 h-12 mx-auto mb-3 opacity-40"></i>
+                            <p class="text-sm">Ingresa un ejercicio o selecciona un ejemplo introductorio para ver la solución explicada.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal: Información -->
+    <div id="infoModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 relative">
+            <button onclick="closeModal('infoModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="bg-indigo-100 p-2.5 rounded-xl text-indigo-600">
+                    <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Acerca del Asistente Virtual</h2>
+                    <p class="text-xs text-indigo-600 font-semibold">Universidad Mariano Gálvez de Guatemala</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4 text-sm text-slate-600 border-t border-slate-100 pt-4">
+                <p><strong>MathAssistant Pro</strong> es una plataforma interactiva creada para brindar soluciones detalladas paso a paso con rigor pedagógico en las áreas de Pre-Cálculo y Cálculo.</p>
+                
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                    <p class="font-semibold text-slate-800 text-xs uppercase tracking-wider">Detalles del Proyecto Académico:</p>
+                    <ul class="text-xs space-y-1.5 text-slate-700">
+                        <li><strong>Facultad:</strong> Ingeniería en Sistemas de Información y Ciencias de la Computación</li>
+                        <li><strong>Curso:</strong> Pre-Cálculo / Cálculo</li>
+                        <li><strong>Sección:</strong> Sección B</li>
+                        <li><strong>Integrantes / Autores:</strong>
+                            <ul class="list-disc pl-5 mt-1 font-medium text-indigo-700">
+                                <li>Ricardo Marc Anderson Sanic Mejía</li>
+                                <li>Allisson Andrea Arreaga Alonzo</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <p class="text-xs text-slate-500">Diseñado para resolver Aritmética, Factorización Avanzada, Ecuaciones/Desigualdades, Evaluación y Análisis de Funciones, Límites, Derivadas, Integrales y Aplicaciones de Optimización.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ejemplos Introductorios -->
+    <div id="examplesModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 relative max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Ejemplos Introductorios & Guía</h2>
+                        <p class="text-xs text-slate-500">Haz clic en cualquier ejemplo para cargarlo y resolverlo automáticamente</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('examplesModal')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="overflow-y-auto space-y-3 pr-2 flex-1" id="examplesList">
+                <!-- 10 Examples auto-generated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        let currentCategory = 'algebra';
+
+        const guidedExamples = [
+            { cat: 'algebra', title: '1. Ecuación Lineal Directa', expr: '2x + 3 = 0', desc: 'Muestra la transposición de términos y despeje básico.' },
+            { cat: 'algebra', title: '2. Diferencia de Cuadrados', expr: 'x^2 - 4 = 0', desc: 'Aplica a² - b² = (a-b)(a+b) e iguala factores a cero.' },
+            { cat: 'algebra', title: '3. Factor Común Polinómico', expr: 'x^3 - 4x = 0', desc: 'Muestra extracción de factor común y factorización subsiguiente.' },
+            { cat: 'algebra', title: '4. Suma de Cubos (Raíces Complejas)', expr: 'x^3 + 8 = 0', desc: 'Descompone en factor lineal y cuadrático, obteniendo i.' },
+            { cat: 'algebra', title: '5. Inecuación / Desigualdad', expr: 'x^2 - 9 > 0', desc: 'Puntos críticos, tabla de signos y notación de intervalo.' },
+            { cat: 'funciones', title: '6. Evaluación & Gráfica de Función', expr: 'x^2 - 2x - 3', desc: 'Evalúa en [-3, 3], analiza intersecciones y proyecta la parábola.' },
+            { cat: 'limites', title: '7. Límite al Infinito', expr: '(2x + 1)/(x - 3)', tend: 'infinity', desc: 'Calcula el comportamiento asintótico cuando x → ∞.' },
+            { cat: 'derivadas', title: '8. Derivada Regla de la Cadena', expr: '(3x^2 + 2x)^3', desc: 'Muestra el paso a paso derivando funciones compuestas.' },
+            { cat: 'integrales', title: '9. Integral Definida (Área)', expr: 'x^2', type: 'definida', a: '0', b: '3', desc: 'Calcula el área bajo la curva f(x) entre x=0 y x=3.' },
+            { cat: 'aplicaciones', title: '10. Aplicación: Optimización de Área', expr: 'Optimización', appType: 'opt_area', desc: 'Determina las dimensiones que maximizan un área con perímetro fijo.' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setCategory('algebra');
+            renderExamplesModal();
+        });
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-300');
+            });
+            const activeTab = document.getElementById(`tab-${cat}`);
+            if(activeTab) {
+                activeTab.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                activeTab.classList.remove('text-slate-300');
+            }
+
+            document.getElementById('categoryLabel').innerText = cat.toUpperCase();
+            renderDynamicControls(cat);
+            
+            const graphCard = document.getElementById('graphCard');
+            if(cat === 'funciones' || cat === 'integrales') {
+                graphCard.classList.remove('hidden');
+            } else {
+                graphCard.classList.add('hidden');
+            }
+        }
+
+        function renderDynamicControls(cat) {
+            const container = document.getElementById('dynamicControls');
+            container.innerHTML = '';
+
+            if (cat === 'funciones') {
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+                        <label class="text-xs font-semibold text-slate-700">Modo de Evaluación:</label>
+                        <select id="funcEvalMode" onchange="toggleFuncEvalInput()" class="text-xs bg-white border border-slate-300 rounded-lg p-1.5 focus:ring-1 focus:ring-indigo-500">
+                            <option value="default">Rango Estándar [-3, -2, -1, 0, 1, 2, 3]</option>
+                            <option value="custom">Evaluar en un número específico</option>
+                        </select>
+                    </div>
+                    <div id="customEvalContainer" class="hidden">
+                        <input type="number" id="customXVal" placeholder="Ingrese valor de x (ej. 5)" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                `;
+            } else if (cat === 'limites') {
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+                        <label class="text-xs font-semibold text-slate-700">El límite tiende a (x →):</label>
+                        <select id="limitTendency" class="text-xs bg-white border border-slate-300 rounded-lg p-1.5 font-mono focus:ring-1 focus:ring-indigo-500">
+                            <option value="0">0</option>
+                            <option value="infinity">Infinito (∞)</option>
+                            <option value="-infinity">-Infinito (-∞)</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="pi">π (Pi)</option>
+                        </select>
+                    </div>
+                `;
+            } else if (cat === 'integrales') {
+                container.innerHTML = `
+                    <div class="bg-slate-100 p-2.5 rounded-xl border border-slate-200 space-y-2">
+                        <div class="flex items-center gap-3">
+                            <label class="text-xs font-semibold text-slate-700">Tipo de Integral:</label>
+                            <label class="inline-flex items-center gap-1 text-xs cursor-pointer">
+                                <input type="radio" name="integralType" value="indefinida" checked onchange="toggleIntegralBounds()" class="text-indigo-600"> Indefinida
+                            </label>
+                            <label class="inline-flex items-center gap-1 text-xs cursor-pointer">
+                                <input type="radio" name="integralType" value="definida" onchange="toggleIntegralBounds()" class="text-indigo-600"> Definida
+                            </label>
+                        </div>
+                        <div id="integralBounds" class="hidden grid grid-cols-2 gap-2 pt-1 border-t border-slate-200">
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold">Límite Inferior (a):</label>
+                                <input type="text" id="boundA" value="0" class="w-full text-xs p-1.5 bg-white border border-slate-300 rounded">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold">Límite Superior (b):</label>
+                                <input type="text" id="boundB" value="3" class="w-full text-xs p-1.5 bg-white border border-slate-300 rounded">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (cat === 'aplicaciones') {
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+                        <label class="text-xs font-semibold text-slate-700">Modelo de Aplicación:</label>
+                        <select id="appType" class="text-xs bg-white border border-slate-300 rounded-lg p-1.5 focus:ring-1 focus:ring-indigo-500">
+                            <option value="opt_area">Optimización: Maximizar Área con Perímetro Fijo</option>
+                            <option value="rate_change">Razón de Cambio Relacionada: Crecimiento de Superficie</option>
+                        </select>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleFuncEvalInput() {
+            const mode = document.getElementById('funcEvalMode').value;
+            const container = document.getElementById('customEvalContainer');
+            if(mode === 'custom') container.classList.remove('hidden');
+            else container.classList.add('hidden');
+        }
+
+        function toggleIntegralBounds() {
+            const type = document.querySelector('input[name="integralType"]:checked').value;
+            const bounds = document.getElementById('integralBounds');
+            if(type === 'definida') bounds.classList.remove('hidden');
+            else bounds.classList.add('hidden');
+        }
+
+        function insertMath(str) {
+            const input = document.getElementById('mathInput');
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
+            input.value = text.substring(0, start) + str + text.substring(end);
+            input.focus();
+            input.selectionStart = input.selectionEnd = start + str.length;
+        }
+
+        function processExercise() {
+            const inputVal = document.getElementById('mathInput').value.trim();
+            const output = document.getElementById('solutionSteps');
+            const status = document.getElementById('statusBadge');
+
+            if (!inputVal && currentCategory !== 'aplicaciones') {
+                output.innerHTML = `
+                    <div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm">
+                        ⚠️ Por favor, ingresa una expresión o ejercicio antes de procesar.
+                    </div>
+                `;
+                return;
+            }
+
+            status.innerText = 'Calculando...';
+            status.className = 'text-xs px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full font-medium';
+
+            try {
+                let steps = [];
+
+                if (currentCategory === 'aritmetica') {
+                    steps = solveAritmetica(inputVal);
+                } else if (currentCategory === 'algebra') {
+                    steps = solveAlgebraAndEquations(inputVal);
+                } else if (currentCategory === 'funciones') {
+                    steps = solveFunciones(inputVal);
+                } else if (currentCategory === 'limites') {
+                    steps = solveLimites(inputVal);
+                } else if (currentCategory === 'derivadas') {
+                    steps = solveDerivadas(inputVal);
+                } else if (currentCategory === 'integrales') {
+                    steps = solveIntegrales(inputVal);
+                } else if (currentCategory === 'aplicaciones') {
+                    steps = solveAplicaciones();
+                }
+
+                renderSteps(steps);
+                status.innerText = 'Completado';
+                status.className = 'text-xs px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full font-medium';
+
+            } catch (err) {
+                console.error(err);
+                output.innerHTML = `
+                    <div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm space-y-2">
+                        <p class="font-bold">❌ Error de Sintaxis o Procesamiento</p>
+                        <p class="text-xs">Asegúrate de escribir la expresión con la sintaxis correcta. Ejemplos: <code>x^2 - 4 = 0</code>, <code>(2x + 1)/(x - 1)</code>.</p>
+                    </div>
+                `;
+                status.innerText = 'Error';
+                status.className = 'text-xs px-2.5 py-1 bg-red-100 text-red-700 rounded-full font-medium';
+            }
+        }
+
+        function renderSteps(steps) {
+            const container = document.getElementById('solutionSteps');
+            container.innerHTML = '';
+
+            steps.forEach((step, idx) => {
+                const card = document.createElement('div');
+                card.className = 'p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5 transition hover:border-indigo-300';
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 flex items-center justify-center bg-indigo-600 text-white font-bold rounded-full text-xs">${idx + 1}</span>
+                        <h4 class="font-bold text-slate-800 text-sm">${step.title}</h4>
+                    </div>
+                    <p class="text-xs text-slate-600 pl-8">${step.explanation}</p>
+                    ${step.formula ? `<div class="pl-8 text-xs font-semibold text-indigo-700">📌 Fórmula / Regla: $${step.formula}$</div>` : ''}
+                    ${step.latex ? `<div class="pl-8 text-sm font-mono bg-white p-3 rounded-lg border border-slate-200 text-slate-900 latex-display">$$${step.latex}$$</div>` : ''}
+                `;
+                container.appendChild(card);
+            });
+
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // --- SOLVERS ---
+        function solveAritmetica(expr) {
+            const result = math.evaluate(expr);
+            const latexExpr = math.parse(expr).toTex();
+            return [
+                {
+                    title: 'Expresión Aritmética Original',
+                    explanation: 'Se identifica la jerarquía de operaciones (paréntesis, potencias, multiplicación/división, suma/resta).',
+                    latex: latexExpr
+                },
+                {
+                    title: 'Cálculo de Operaciones paso a paso',
+                    explanation: 'Aplicando propiedades numéricas directas y simplificación de fracciones.',
+                    latex: `\\text{Resultado} = ${result}`
+                }
+            ];
+        }
+
+        function solveAlgebraAndEquations(rawExpr) {
+            let steps = [];
+            
+            if (rawExpr.includes('>') || rawExpr.includes('<') || rawExpr.includes('<=') || rawExpr.includes('>=')) {
+                return solveInequality(rawExpr);
+            }
+
+            if (rawExpr.includes('=')) {
+                const parts = rawExpr.split('=');
+                const left = parts[0].trim();
+                const right = parts[1].trim();
+
+                steps.push({
+                    title: 'Planteamiento de la Ecuación',
+                    explanation: 'Se identifican el miembro izquierdo y derecho de la igualdad.',
+                    latex: `${math.parse(left).toTex()} = ${math.parse(right).toTex()}`
+                });
+
+                const normExpr = `(${left}) - (${right})`;
+                const simplified = Algebrite.run(`simplify(${normExpr})`).toString();
+
+                steps.push({
+                    title: 'Transposición de Términos e Igualación a Cero',
+                    explanation: 'Se trasladan todos los términos al miembro izquierdo restando los términos del miembro derecho.',
+                    formula: 'A(x) = B(x) \\implies A(x) - B(x) = 0',
+                    latex: `${Algebrite.run(`toLatex(${simplified})`)} = 0`
+                });
+
+                const degree = getPolynomialDegree(simplified);
+
+                if (degree === 1) {
+                    const xSol = Algebrite.run(`nroots(${simplified})`).toString();
+                    steps.push({
+                        title: 'Despeje de Ecuación Lineal',
+                        explanation: 'Se aíslan las variables en un miembro y las constantes en el otro mediante operaciones inversas.',
+                        latex: `x = ${Algebrite.run(`toLatex(${xSol})`)}`
+                    });
+                } else if (degree === 2) {
+                    steps = steps.concat(solveQuadraticCases(simplified));
+                } else {
+                    const roots = Algebrite.run(`nroots(${simplified})`).toString();
+                    const factored = Algebrite.run(`factor(${simplified})`).toString();
+                    steps.push({
+                        title: 'Factorización de Polinomio',
+                        explanation: 'Se aplican factores comunes y división sintética para descomponer el polinomio.',
+                        latex: `${Algebrite.run(`toLatex(${factored})`)} = 0`
+                    });
+                    steps.push({
+                        title: 'Determinación de Ceros Reales y Complejos',
+                        explanation: 'Se iguala cada factor lineal a cero para obtener el conjunto completo de raíces.',
+                        latex: `x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+                    });
+                }
+
+                return steps;
+            }
+
+            const factored = Algebrite.run(`factor(${rawExpr})`).toString();
+            steps.push({
+                title: 'Expresión Algebraica',
+                explanation: 'Se analiza la estructura algebraica dada.',
+                latex: Algebrite.run(`toLatex(${rawExpr})`)
+            });
+            steps.push({
+                title: 'Factorización Completa al Máximo Nivel',
+                explanation: 'Se identifican trinomios o diferencias de cuadrados para simplificar la expresión.',
+                latex: Algebrite.run(`toLatex(${factored})`)
+            });
+            return steps;
+        }
+
+        function solveQuadraticCases(expr) {
+            let steps = [];
+            
+            if (expr.match(/^x\^2\s*-\s*\d+$/) || expr.match(/^\d*x\^2\s*-\s*\d+$/)) {
+                const factored = Algebrite.run(`factor(${expr})`).toString();
+                const roots = Algebrite.run(`nroots(${expr})`).toString();
+
+                steps.push({
+                    title: 'Identificación: Diferencia de Cuadrados',
+                    explanation: 'La expresión corresponde al patrón de una diferencia de dos términos al cuadrado.',
+                    formula: 'a^2 - b^2 = (a - b)(a + b)',
+                    latex: `${Algebrite.run(`toLatex(${factored})`)} = 0`
+                });
+
+                steps.push({
+                    title: 'Propiedad del Producto Cero para Hallar Ceros',
+                    explanation: 'Para que el producto sea cero, al menos uno de sus factores debe ser igual a cero.',
+                    formula: 'A \\cdot B = 0 \\implies A = 0 \\quad \\lor \\quad B = 0',
+                    latex: `\\begin{cases} a - b = 0 \\implies x_1 = \\dots \\\\ a + b = 0 \\implies x_2 = \\dots \\end{cases} \\quad \\implies x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+                });
+                return steps;
+            }
+
+            const roots = Algebrite.run(`nroots(${expr})`).toString();
+            const factored = Algebrite.run(`factor(${expr})`).toString();
+
+            steps.push({
+                title: 'Aplicación de la Fórmula General Cuadrática',
+                explanation: 'Se identifican los coeficientes a, b y c para calcular el discriminante Δ = b² - 4ac.',
+                formula: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}',
+                latex: `x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}`
+            });
+
+            steps.push({
+                title: 'Factorización Resultante y Ceros (Reales / Complejos i)',
+                explanation: 'Se obtienen las soluciones exactas. Si Δ < 0, se generan ceros complejos con la unidad imaginaria i.',
+                latex: `\\text{Factorizado: } ${Algebrite.run(`toLatex(${factored})`)} = 0 \\implies x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+            });
+
+            return steps;
+        }
+
+        function solveInequality(raw) {
+            let op = '>';
+            if (raw.includes('>=')) op = '>=';
+            else if (raw.includes('<=')) op = '<=';
+            else if (raw.includes('<')) op = '<';
+
+            const parts = raw.split(op);
+            const expr = `(${parts[0]}) - (${parts[1]})`;
+            const roots = Algebrite.run(`nroots(${expr})`).toString();
+
+            return [
+                {
+                    title: 'Análisis de la Desigualdad / Inecuación',
+                    explanation: 'Se trasladan todos los términos a un miembro para comparar la función con cero.',
+                    latex: `${Algebrite.run(`toLatex(${expr})`)} ${op.replace('>=', '\\ge').replace('<=', '\\le')} 0`
+                },
+                {
+                    title: 'Puntos Críticos de la Inecuación',
+                    explanation: 'Se hallan los ceros de la ecuación resolviendo la igualdad a cero.',
+                    latex: `\\text{Puntos Críticos: } x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+                },
+                {
+                    title: 'Análisis de Intervalos de Prueba & Solución',
+                    explanation: 'Evaluando los signos en cada intervalo del plano cartesiano se construye el conjunto solución.',
+                    latex: `x \\in (-\\infty, -\\text{raíz}] \\cup [\\text{raíz}, \\infty)`
+                }
+            ];
+        }
+
+        function getPolynomialDegree(expr) {
+            if (expr.includes('x^3')) return 3;
+            if (expr.includes('x^2')) return 2;
+            if (expr.includes('x')) return 1;
+            return 0;
+        }
+
+        function solveFunciones(expr) {
+            const mode = document.getElementById('funcEvalMode').value;
+            let steps = [];
+
+            steps.push({
+                title: 'Definición de la Función f(x)',
+                explanation: 'Se establece la regla de correspondencia de la función.',
+                latex: `f(x) = ${math.parse(expr).toTex()}`
+            });
+
+            if (mode === 'default') {
+                const domainVals = [-3, -2, -1, 0, 1, 2, 3];
+                const tableRows = domainVals.map(x => {
+                    try {
+                        const y = math.evaluate(expr, { x: x });
+                        return `${x} & ${y}`;
+                    } catch(e) { return `${x} & \\text{Indefinido}`; }
+                }).join(' \\\\ ');
+
+                steps.push({
+                    title: 'Evaluación Rango Estándar x ∈ [-3, 3]',
+                    explanation: 'Sustitución directa de los valores principales en la variable independiente x.',
+                    latex: `\\begin{array}{c|c} x & f(x) \\\\ \\hline ${tableRows} \\end{array}`
+                });
+
+                renderGraph(expr, domainVals);
+
+            } else {
+                const customX = parseFloat(document.getElementById('customXVal').value || 0);
+                const yVal = math.evaluate(expr, { x: customX });
+                steps.push({
+                    title: `Evaluación Puntual en x = ${customX}`,
+                    explanation: 'Sustitución del valor numérico especificado.',
+                    latex: `f(${customX}) = ${yVal}`
+                });
+                renderGraph(expr, [-10, 10]);
+            }
+
+            return steps;
+        }
+
+        function renderGraph(expr, domain) {
+            try {
+                const xValues = [];
+                const yValues = [];
+                const min = Math.min(...domain) - 2;
+                const max = Math.max(...domain) + 2;
+
+                for (let x = min; x <= max; x += 0.1) {
+                    xValues.push(x);
+                    try {
+                        const y = math.evaluate(expr, { x: x });
+                        yValues.push(y);
+                    } catch(e) { yValues.push(null); }
+                }
+
+                const trace = {
+                    x: xValues,
+                    y: yValues,
+                    type: 'scatter',
+                    mode: 'lines',
+                    line: { color: '#4f46e5', width: 2.5 },
+                    name: 'f(x)'
+                };
+
+                const layout = {
+                    margin: { t: 10, r: 10, l: 30, b: 30 },
+                    xaxis: { title: 'x', zeroline: true, zerolinecolor: '#94a3b8' },
+                    yaxis: { title: 'y', zeroline: true, zerolinecolor: '#94a3b8' },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)'
+                };
+
+                Plotly.newPlot('plotlyChart', [trace], layout, { responsive: true, displayModeBar: false });
+
+                const yIntercept = math.evaluate(expr, { x: 0 });
+                document.getElementById('graphAnalysis').innerHTML = `
+                    <p><strong>• Corte con Eje Y:</strong> (0, ${yIntercept})</p>
+                    <p><strong>• Comportamiento:</strong> Curva continua evaluada en el intervalo de interés.</p>
+                `;
+
+            } catch(e) { console.error("Error graficando:", e); }
+        }
+
+        function solveLimites(expr) {
+            const tend = document.getElementById('limitTendency').value;
+            let tendTex = tend === 'infinity' ? '\\infty' : (tend === '-infinity' ? '-\\infty' : tend);
+
+            return [
+                {
+                    title: 'Planteamiento del Límite',
+                    explanation: 'Se analiza la tendencia de la variable independiente x.',
+                    latex: `\\lim_{x \\to ${tendTex}} \\left( ${math.parse(expr).toTex()} \\right)`
+                },
+                {
+                    title: 'Evaluación Directa y Regla de L\'Hôpital',
+                    explanation: 'Si surge una indeterminación 0/0 o ∞/∞, se derivan numerador y denominador.',
+                    formula: '\\lim_{x \\to a} \\frac{f(x)}{g(x)} = \\lim_{x \\to a} \\frac{f\'(x)}{g\'(x)}',
+                    latex: `\\text{Resultado del Límite} = ${Algebrite.run(`toLatex(limit(${expr}, x, ${tend === 'infinity' ? 'inf' : tend}))`)}`
+                }
+            ];
+        }
+
+        function solveDerivadas(expr) {
+            const der1 = Algebrite.run(`derivative(${expr})`).toString();
+            const der2 = Algebrite.run(`derivative(${der1})`).toString();
+
+            return [
+                {
+                    title: 'Función Original',
+                    explanation: 'Expresión f(x) a derivar con respecto a x.',
+                    latex: `f(x) = ${math.parse(expr).toTex()}`
+                },
+                {
+                    title: 'Primera Derivada f\'(x)',
+                    explanation: 'Aplicación de la regla de potencias y regla de la cadena.',
+                    formula: '\\frac{d}{dx}[x^n] = n x^{n-1}',
+                    latex: `f'(x) = ${Algebrite.run(`toLatex(${der1})`)}`
+                },
+                {
+                    title: 'Segunda Derivada f\'\'(x) (Razón de Cambio de la Pendiente)',
+                    explanation: 'Útil para determinar la concavidad y puntos de inflexión.',
+                    latex: `f''(x) = ${Algebrite.run(`toLatex(${der2})`)}`
+                }
+            ];
+        }
+
+        function solveIntegrales(expr) {
+            const type = document.querySelector('input[name="integralType"]:checked').value;
+            const indefIntegral = Algebrite.run(`integral(${expr})`).toString();
+
+            if (type === 'indefinida') {
+                return [
+                    {
+                        title: 'Integral Indefinida',
+                        explanation: 'Se determina la antiderivada general o familia de funciones primitivas.',
+                        formula: '\\int x^n dx = \\frac{x^{n+1}}{n+1} + C',
+                        latex: `\\int \\left( ${math.parse(expr).toTex()} \\right) dx = ${Algebrite.run(`toLatex(${indefIntegral})`)} + C`
+                    }
+                ];
+            } else {
+                const a = document.getElementById('boundA').value || '0';
+                const b = document.getElementById('boundB').value || '3';
+
+                const valB = math.evaluate(indefIntegral, { x: parseFloat(b) });
+                const valA = math.evaluate(indefIntegral, { x: parseFloat(a) });
+                const area = valB - valA;
+
+                renderIntegralGraph(expr, parseFloat(a), parseFloat(b));
+
+                return [
+                    {
+                        title: 'Integral Definida - Teorema Fundamental del Cálculo',
+                        explanation: 'Evaluación de la primitiva en los límites superior (b) e inferior (a).',
+                        formula: '\\int_{a}^{b} f(x) dx = F(b) - F(a)',
+                        latex: `\\int_{${a}}^{${b}} \\left( ${math.parse(expr).toTex()} \\right) dx = \\left[ ${Algebrite.run(`toLatex(${indefIntegral})`)} \\right]_{${a}}^{${b}} = ${area.toFixed(4)}`
+                    }
+                ];
+            }
+        }
+
+        function renderIntegralGraph(expr, a, b) {
+            const xVals = [];
+            const yVals = [];
+            for (let x = a - 1; x <= b + 1; x += 0.05) {
+                xVals.push(x);
+                yVals.push(math.evaluate(expr, { x: x }));
+            }
+
+            const traceLine = { x: xVals, y: yVals, mode: 'lines', name: 'f(x)', line: { color: '#4f46e5' } };
+            
+            const xShade = xVals.filter(x => x >= a && x <= b);
+            const yShade = xShade.map(x => math.evaluate(expr, { x: x }));
+            xShade.unshift(a); yShade.unshift(0);
+            xShade.push(b); yShade.push(0);
+
+            const traceShade = {
+                x: xShade, y: yShade, fill: 'tozeroy', fillcolor: 'rgba(79, 70, 229, 0.2)',
+                line: { color: 'transparent' }, name: 'Área'
+            };
+
+            Plotly.newPlot('plotlyChart', [traceLine, traceShade], {
+                margin: { t: 10, r: 10, l: 30, b: 30 },
+                paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)'
+            }, { responsive: true, displayModeBar: false });
+        }
+
+        function solveAplicaciones() {
+            const type = document.getElementById('appType').value;
+
+            if (type === 'opt_area') {
+                return [
+                    {
+                        title: 'Planteamiento del Problema de Optimización',
+                        explanation: 'Se requiere maximizar el área A de un rectángulo sujeto a un perímetro fijo de P = 100 metros.',
+                        latex: 'P = 2x + 2y = 100 \\implies y = 50 - x'
+                    },
+                    {
+                        title: 'Función Objetivo de una sola Variable A(x)',
+                        explanation: 'Sustituyendo y en la fórmula del área A = x · y:',
+                        latex: 'A(x) = x(50 - x) = 50x - x^2'
+                    },
+                    {
+                        title: 'Derivación e Igualación a Cero (Puntos Críticos)',
+                        explanation: 'Se deriva A(x) para encontrar el máximo local.',
+                        formula: 'A\'(x) = 0',
+                        latex: 'A\'(x) = 50 - 2x = 0 \\implies 2x = 50 \\implies x = 25'
+                    },
+                    {
+                        title: 'Conclusión Contextualizada',
+                        explanation: 'Las dimensiones que maximizan el área son un cuadrado de 25m x 25m con un área máxima de 625 m².',
+                        latex: '\\text{Área Máxima} = 625 \\text{ m}^2'
+                    }
+                ];
+            } else {
+                return [
+                    {
+                        title: 'Razón de Cambio Relacionada',
+                        explanation: 'Un círculo se expande de modo que su radio r aumenta a una velocidad constante de dr/dt = 3 cm/s. ¿Qué tan rápido crece el área A cuando r = 5 cm?',
+                        latex: 'A = \\pi r^2'
+                    },
+                    {
+                        title: 'Derivación Implícita respecto al Tiempo t',
+                        explanation: 'Aplicando la regla de la cadena:',
+                        formula: '\\frac{dA}{dt} = 2\\pi r \\frac{dr}{dt}',
+                        latex: '\\frac{dA}{dt} = 2\\pi (5)(3)'
+                    },
+                    {
+                        title: 'Resultado Final',
+                        explanation: 'El área aumenta a una razón constante de 30π cm²/s.',
+                        latex: '\\frac{dA}{dt} = 30\\pi \\approx 94.25 \\text{ cm}^2/\\text{s}'
+                    }
+                ];
+            }
+        }
+
+        function renderExamplesModal() {
+            const container = document.getElementById('examplesList');
+            container.innerHTML = guidedExamples.map((ex, index) => `
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between hover:border-indigo-300 transition">
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800">${ex.title}</h4>
+                        <p class="text-[11px] text-slate-500">${ex.desc}</p>
+                        <code class="text-xs text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded mt-1 inline-block">${ex.expr}</code>
+                    </div>
+                    <button onclick="loadExample(${index})" class="px-3 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow-sm transition">
+                        Cargar y Resolver
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function loadExample(index) {
+            const ex = guidedExamples[index];
+            closeModal('examplesModal');
+            setCategory(ex.cat);
+
+            document.getElementById('mathInput').value = ex.expr;
+
+            if (ex.tend) {
+                setTimeout(() => {
+                    const sel = document.getElementById('limitTendency');
+                    if (sel) sel.value = ex.tend;
+                }, 100);
+            }
+
+            if (ex.type === 'definida') {
+                setTimeout(() => {
+                    const radio = document.querySelector('input[name="integralType"][value="definida"]');
+                    if (radio) {
+                        radio.checked = true;
+                        toggleIntegralBounds();
+                        document.getElementById('boundA').value = ex.a;
+                        document.getElementById('boundB').value = ex.b;
+                    }
+                }, 100);
+            }
+
+            setTimeout(() => {
+                processExercise();
+            }, 200);
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    </script>
+</body>
+</html>
