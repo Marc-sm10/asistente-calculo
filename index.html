@@ -499,20 +499,26 @@
                 const left = parts[0].trim();
                 const right = parts[1].trim();
 
+                let latexLeft = left, latexRight = right;
+                try { latexLeft = math.parse(left).toTex(); } catch(e){}
+                try { latexRight = math.parse(right).toTex(); } catch(e){}
+
                 steps.push({
                     title: 'Planteamiento de la Ecuación',
                     explanation: 'Se identifican el miembro izquierdo y derecho de la igualdad.',
-                    latex: `${math.parse(left).toTex()} = ${math.parse(right).toTex()}`
+                    latex: `${latexLeft} = ${latexRight}`
                 });
 
                 const normExpr = `(${left}) - (${right})`;
                 const simplified = Algebrite.run(`simplify(${normExpr})`).toString();
+                let latexSimplified = simplified;
+                try { latexSimplified = math.parse(simplified).toTex(); } catch(e){}
 
                 steps.push({
                     title: 'Transposición de Términos e Igualación a Cero',
                     explanation: 'Se trasladan todos los términos al miembro izquierdo restando los términos del miembro derecho.',
                     formula: 'A(x) = B(x) \\implies A(x) - B(x) = 0',
-                    latex: `${Algebrite.run(`toLatex(${simplified})`)} = 0`
+                    latex: `${latexSimplified} = 0`
                 });
 
                 const degree = getPolynomialDegree(simplified);
@@ -522,38 +528,46 @@
                     steps.push({
                         title: 'Despeje de Ecuación Lineal',
                         explanation: 'Se aíslan las variables en un miembro y las constantes en el otro mediante operaciones inversas.',
-                        latex: `x = ${Algebrite.run(`toLatex(${xSol})`)}`
+                        latex: `x = ${xSol}`
                     });
                 } else if (degree === 2) {
                     steps = steps.concat(solveQuadraticCases(simplified));
                 } else {
                     const roots = Algebrite.run(`nroots(${simplified})`).toString();
                     const factored = Algebrite.run(`factor(${simplified})`).toString();
+                    let latexFactored = factored;
+                    try { latexFactored = math.parse(factored).toTex(); } catch(e){}
                     steps.push({
                         title: 'Factorización de Polinomio',
                         explanation: 'Se aplican factores comunes y división sintética para descomponer el polinomio.',
-                        latex: `${Algebrite.run(`toLatex(${factored})`)} = 0`
+                        latex: `${latexFactored} = 0`
                     });
                     steps.push({
                         title: 'Determinación de Ceros Reales y Complejos',
                         explanation: 'Se iguala cada factor lineal a cero para obtener el conjunto completo de raíces.',
-                        latex: `x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+                        latex: `x \\in \\{${roots}\\}`
                     });
                 }
 
                 return steps;
             }
 
+            // Raw expression
+            let latexRaw = rawExpr;
+            try { latexRaw = math.parse(rawExpr).toTex(); } catch(e){}
             const factored = Algebrite.run(`factor(${rawExpr})`).toString();
+            let latexFactored = factored;
+            try { latexFactored = math.parse(factored).toTex(); } catch(e){}
+
             steps.push({
                 title: 'Expresión Algebraica',
                 explanation: 'Se analiza la estructura algebraica dada.',
-                latex: Algebrite.run(`toLatex(${rawExpr})`)
+                latex: latexRaw
             });
             steps.push({
                 title: 'Factorización Completa al Máximo Nivel',
                 explanation: 'Se identifican trinomios o diferencias de cuadrados para simplificar la expresión.',
-                latex: Algebrite.run(`toLatex(${factored})`)
+                latex: latexFactored
             });
             return steps;
         }
@@ -564,25 +578,29 @@
             if (expr.match(/^x\^2\s*-\s*\d+$/) || expr.match(/^\d*x\^2\s*-\s*\d+$/)) {
                 const factored = Algebrite.run(`factor(${expr})`).toString();
                 const roots = Algebrite.run(`nroots(${expr})`).toString();
+                let latexFactored = factored;
+                try { latexFactored = math.parse(factored).toTex(); } catch(e){}
 
                 steps.push({
                     title: 'Identificación: Diferencia de Cuadrados',
                     explanation: 'La expresión corresponde al patrón de una diferencia de dos términos al cuadrado.',
                     formula: 'a^2 - b^2 = (a - b)(a + b)',
-                    latex: `${Algebrite.run(`toLatex(${factored})`)} = 0`
+                    latex: `${latexFactored} = 0`
                 });
 
                 steps.push({
                     title: 'Propiedad del Producto Cero para Hallar Ceros',
                     explanation: 'Para que el producto sea cero, al menos uno de sus factores debe ser igual a cero.',
                     formula: 'A \\cdot B = 0 \\implies A = 0 \\quad \\lor \\quad B = 0',
-                    latex: `\\begin{cases} a - b = 0 \\implies x_1 = \\dots \\\\ a + b = 0 \\implies x_2 = \\dots \\end{cases} \\quad \\implies x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+                    latex: `\\begin{cases} a - b = 0 \\implies x_1 = \\dots \\\\ a + b = 0 \\implies x_2 = \\dots \\end{cases} \\quad \\implies x \\in \\{${roots}\\}`
                 });
                 return steps;
             }
 
             const roots = Algebrite.run(`nroots(${expr})`).toString();
             const factored = Algebrite.run(`factor(${expr})`).toString();
+            let latexFactored = factored;
+            try { latexFactored = math.parse(factored).toTex(); } catch(e){}
 
             steps.push({
                 title: 'Aplicación de la Fórmula General Cuadrática',
@@ -594,7 +612,7 @@
             steps.push({
                 title: 'Factorización Resultante y Ceros (Reales / Complejos i)',
                 explanation: 'Se obtienen las soluciones exactas. Si Δ < 0, se generan ceros complejos con la unidad imaginaria i.',
-                latex: `\\text{Factorizado: } ${Algebrite.run(`toLatex(${factored})`)} = 0 \\implies x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+                latex: `\\text{Factorizado: } ${latexFactored} = 0 \\implies x \\in \\{${roots}\\}`
             });
 
             return steps;
@@ -609,17 +627,19 @@
             const parts = raw.split(op);
             const expr = `(${parts[0]}) - (${parts[1]})`;
             const roots = Algebrite.run(`nroots(${expr})`).toString();
+            let latexExpr = expr;
+            try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
             return [
                 {
                     title: 'Análisis de la Desigualdad / Inecuación',
                     explanation: 'Se trasladan todos los términos a un miembro para comparar la función con cero.',
-                    latex: `${Algebrite.run(`toLatex(${expr})`)} ${op.replace('>=', '\\ge').replace('<=', '\\le')} 0`
+                    latex: `${latexExpr} ${op.replace('>=', '\\ge').replace('<=', '\\le')} 0`
                 },
                 {
                     title: 'Puntos Críticos de la Inecuación',
                     explanation: 'Se hallan los ceros de la ecuación resolviendo la igualdad a cero.',
-                    latex: `\\text{Puntos Críticos: } x \\in \\{${Algebrite.run(`toLatex(${roots})`)}\\}`
+                    latex: `\\text{Puntos Críticos: } x \\in \\{${roots}\\}`
                 },
                 {
                     title: 'Análisis de Intervalos de Prueba & Solución',
@@ -639,11 +659,13 @@
         function solveFunciones(expr) {
             const mode = document.getElementById('funcEvalMode').value;
             let steps = [];
+            let latexExpr = expr;
+            try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
             steps.push({
                 title: 'Definición de la Función f(x)',
                 explanation: 'Se establece la regla de correspondencia de la función.',
-                latex: `f(x) = ${math.parse(expr).toTex()}`
+                latex: `f(x) = ${latexExpr}`
             });
 
             if (mode === 'default') {
@@ -723,18 +745,20 @@
         function solveLimites(expr) {
             const tend = document.getElementById('limitTendency').value;
             let tendTex = tend === 'infinity' ? '\\infty' : (tend === '-infinity' ? '-\\infty' : tend);
+            let latexExpr = expr;
+            try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
             return [
                 {
                     title: 'Planteamiento del Límite',
                     explanation: 'Se analiza la tendencia de la variable independiente x.',
-                    latex: `\\lim_{x \\to ${tendTex}} \\left( ${math.parse(expr).toTex()} \\right)`
+                    latex: `\\lim_{x \\to ${tendTex}} \\left( ${latexExpr} \\right)`
                 },
                 {
                     title: 'Evaluación Directa y Regla de L\'Hôpital',
                     explanation: 'Si surge una indeterminación 0/0 o ∞/∞, se derivan numerador y denominador.',
                     formula: '\\lim_{x \\to a} \\frac{f(x)}{g(x)} = \\lim_{x \\to a} \\frac{f\'(x)}{g\'(x)}',
-                    latex: `\\text{Resultado del Límite} = ${Algebrite.run(`toLatex(limit(${expr}, x, ${tend === 'infinity' ? 'inf' : tend}))`)}`
+                    latex: `\\text{Resultado del Límite} = ${Algebrite.run(`limit(${expr}, x, ${tend === 'infinity' ? 'inf' : tend})`)}`
                 }
             ];
         }
@@ -742,23 +766,25 @@
         function solveDerivadas(expr) {
             const der1 = Algebrite.run(`derivative(${expr})`).toString();
             const der2 = Algebrite.run(`derivative(${der1})`).toString();
+            let latexExpr = expr;
+            try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
             return [
                 {
                     title: 'Función Original',
                     explanation: 'Expresión f(x) a derivar con respecto a x.',
-                    latex: `f(x) = ${math.parse(expr).toTex()}`
+                    latex: `f(x) = ${latexExpr}`
                 },
                 {
                     title: 'Primera Derivada f\'(x)',
                     explanation: 'Aplicación de la regla de potencias y regla de la cadena.',
                     formula: '\\frac{d}{dx}[x^n] = n x^{n-1}',
-                    latex: `f'(x) = ${Algebrite.run(`toLatex(${der1})`)}`
+                    latex: `f'(x) = ${der1}`
                 },
                 {
                     title: 'Segunda Derivada f\'\'(x) (Razón de Cambio de la Pendiente)',
                     explanation: 'Útil para determinar la concavidad y puntos de inflexión.',
-                    latex: `f''(x) = ${Algebrite.run(`toLatex(${der2})`)}`
+                    latex: `f''(x) = ${der2}`
                 }
             ];
         }
@@ -766,6 +792,8 @@
         function solveIntegrales(expr) {
             const type = document.querySelector('input[name="integralType"]:checked').value;
             const indefIntegral = Algebrite.run(`integral(${expr})`).toString();
+            let latexExpr = expr;
+            try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
             if (type === 'indefinida') {
                 return [
@@ -773,7 +801,7 @@
                         title: 'Integral Indefinida',
                         explanation: 'Se determina la antiderivada general o familia de funciones primitivas.',
                         formula: '\\int x^n dx = \\frac{x^{n+1}}{n+1} + C',
-                        latex: `\\int \\left( ${math.parse(expr).toTex()} \\right) dx = ${Algebrite.run(`toLatex(${indefIntegral})`)} + C`
+                        latex: `\\int \\left( ${latexExpr} \\right) dx = ${indefIntegral} + C`
                     }
                 ];
             } else {
@@ -791,7 +819,7 @@
                         title: 'Integral Definida - Teorema Fundamental del Cálculo',
                         explanation: 'Evaluación de la primitiva en los límites superior (b) e inferior (a).',
                         formula: '\\int_{a}^{b} f(x) dx = F(b) - F(a)',
-                        latex: `\\int_{${a}}^{${b}} \\left( ${math.parse(expr).toTex()} \\right) dx = \\left[ ${Algebrite.run(`toLatex(${indefIntegral})`)} \\right]_{${a}}^{${b}} = ${area.toFixed(4)}`
+                        latex: `\\int_{${a}}^{${b}} \\left( ${latexExpr} \\right) dx = \\left[ ${indefIntegral} \\right]_{${a}}^{${b}} = ${area.toFixed(4)}`
                     }
                 ];
             }
@@ -919,6 +947,7 @@
             }, 200);
         }
 
+        function openModal(id) { document.getElementById(id).classList.add('hidden'); } // wait, modal open helper:
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     </script>
