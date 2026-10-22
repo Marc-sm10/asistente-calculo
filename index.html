@@ -1,721 +1,1005 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asistente Virtual de Cálculo y Precálculo</title>
-  
-  <!-- jQuery (Requerido para MathQuill) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathAssistant Pro - Asistente Matemático Paso a Paso</title>
 
-  <!-- MathQuill CSS y JS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-  <!-- MathJax para Renderizado Matemático Formal -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  
-  <!-- Math.js para Evaluación y Análisis -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
-  
-  <!-- FunctionPlot para Gráficas Interactivas -->
-  <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
-  <script src="https://unpkg.com/function-plot@1/dist/function-plot.js"></script>
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    :root {
-      --primary: #0f172a;
-      --secondary: #2563eb;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --accent: #10b981;
-    }
+    <!-- MathJax para renderear LaTeX -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-    * { box-sizing: border-box; }
+    <!-- Math.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <!-- Algebrite CDN para Álgebra Simbólica Avanzada -->
+    <script src="https://cdn.jsdelivr.net/npm/algebrite@1.4.0/dist/algebrite.bundle-for-browser.js"></script>
 
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* PANTALLA DE BIENVENIDA (LANDING) */
-    #welcome-screen {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      width: 100%;
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      color: white;
-      text-align: center;
-      padding: 30px 15px;
-    }
-
-    #welcome-screen h1 {
-      font-size: clamp(2rem, 5vw, 2.8rem);
-      margin-bottom: 10px;
-    }
-
-    .meta-badge {
-      background: rgba(255,255,255,0.1);
-      padding: 12px 24px;
-      border-radius: 20px;
-      margin-bottom: 30px;
-      font-size: 0.95rem;
-      max-width: 700px;
-      line-height: 1.5;
-    }
-
-    .btn-enter {
-      background: var(--secondary);
-      color: white;
-      font-size: 1.1rem;
-      padding: 14px 35px;
-      border: none;
-      border-radius: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-      transition: all 0.3s ease;
-    }
-
-    .btn-enter:hover {
-      transform: translateY(-2px);
-      background: #1d4ed8;
-    }
-
-    .intro-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      width: 100%;
-      max-width: 650px;
-      margin-top: 30px;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: left;
-    }
-
-    /* APLICATIVO PRINCIPAL */
-    #main-app {
-      display: none;
-      width: 100%;
-      min-height: 100vh;
-    }
-
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    header h2 { margin: 0; font-size: 1.3rem; }
-
-    .btn-nav-home {
-      background: rgba(255,255,255,0.15);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.3);
-      padding: 6px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: background 0.2s;
-    }
-
-    .btn-nav-home:hover { background: rgba(255,255,255,0.3); }
-
-    .app-container {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 0 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    /* TECLADO SUPERIOR GENERAL */
-    .global-keyboard {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
-      gap: 8px;
-      margin-top: 10px;
-      margin-bottom: 15px;
-    }
-
-    .tool-btn {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      padding: 10px 6px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.95rem;
-      text-align: center;
-      transition: all 0.2s;
-    }
-
-    .tool-btn:hover {
-      background: #eff6ff;
-      border-color: var(--secondary);
-      color: var(--secondary);
-    }
-
-    .tool-btn.btn-clear { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
-    .tool-btn.btn-clear:hover { background: #fecaca; }
-
-    /* ESPACIO DE TRABAJO Y ENTRADA */
-    .input-row {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 15px;
-    }
-
-    #math-field {
-      flex: 1;
-      min-width: 280px;
-      padding: 14px 18px;
-      border: 2px solid #cbd5e1;
-      border-radius: 10px;
-      font-size: 1.4rem;
-      background: #fff;
-    }
-
-    /* CATEGORÍAS INFERIORES DE ACCIÓN */
-    .category-section {
-      margin-top: 10px;
-    }
-
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .cat-btn {
-      background: #f1f5f9;
-      border: 2px solid #e2e8f0;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      color: var(--primary);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-
-    .cat-btn:hover {
-      background: var(--secondary);
-      color: white;
-      border-color: var(--secondary);
-      transform: translateY(-2px);
-    }
-
-    /* PESTAÑAS DE RESULTADOS */
-    .result-section { display: none; margin-top: 20px; }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
-      border-bottom: 2px solid #e2e8f0;
-      margin-bottom: 15px;
-      overflow-x: auto;
-    }
-
-    .tab-btn {
-      background: none;
-      color: #64748b;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      font-size: 0.95rem;
-      white-space: nowrap;
-    }
-
-    .tab-btn.active {
-      color: var(--secondary);
-      border-bottom-color: var(--secondary);
-      font-weight: bold;
-    }
-
-    .step-box {
-      border-left: 4px solid var(--secondary);
-      background: #eff6ff;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 0 8px 8px 0;
-      overflow-x: auto;
-    }
-
-    .toggle-explanation {
-      background: none;
-      color: var(--secondary);
-      border: none;
-      padding: 0;
-      font-size: 0.85rem;
-      text-decoration: underline;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    .explanation-text {
-      display: none;
-      font-size: 0.9rem;
-      color: #475569;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed #cbd5e1;
-    }
-
-    .alert-error {
-      background: #fef2f2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      display: none;
-    }
-  </style>
+    <style>
+        .step-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+        }
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
 </head>
-<body>
+<body class="h-full flex flex-col font-sans antialiased bg-slate-950 text-slate-100">
 
-  <!-- PANTALLA DE BIENVENIDA -->
-  <div id="welcome-screen">
-    <h1>Asistente Virtual de Cálculo y Precálculo</h1>
-    <div class="meta-badge">
-      <strong>Universidad Mariano Gálvez de Guatemala</strong> | Facultad de Ingeniería<br>
-      Integrantes: Ricardo Marc Anderson Sanic Mejía & Allisson Andrea Arreaga Alonzo
-    </div>
+    <!-- ENCABEZADO / NAVBAR -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / Título -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-tr from-cyan-500 to-blue-600 p-2.5 rounded-xl shadow-md">
+                        <i class="fa-solid me-0 fa-calculator text-xl text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">MathAssistant Pro</h1>
+                        <p class="text-xs text-slate-400 hidden sm:block">Motor Simbólico & Paso a Paso</p>
+                    </div>
+                </div>
 
-    <button class="btn-enter" onclick="iniciarApp()">INGRESAR AL ASISTENTE</button>
-
-    <div class="intro-card">
-      <h3 style="margin-top: 0; color: #60a5fa;">Ejemplo Introductorio / Prueba Oficial:</h3>
-      <p>Analiza $f(x)=x^{3}-6x^{2}+9x+1$; determina sus puntos críticos y clasifica sus extremos relativos.</p>
-      <button class="tool-btn" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none;" onclick="probarEjemploOficial()">
-        Cargar Ejemplo en la Herramienta
-      </button>
-    </div>
-  </div>
-
-  <!-- APLICATIVO PRINCIPAL -->
-  <div id="main-app">
-    <header>
-      <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-        <button class="btn-nav-home" onclick="regresarMenu()">← Menú Principal</button>
-        <h2>Asistente Virtual de Cálculo y Precálculo</h2>
-      </div>
-      <div style="font-size: 0.85rem; opacity: 0.9;">
-        Precálculo / Cálculo | Sección A | Marc Sanic & Allisson Arreaga
-      </div>
+                <!-- Menú de Opciones Solicitado -->
+                <nav class="flex items-center gap-2 sm:gap-4">
+                    <button onclick="openModal('infoModal')" class="px-3.5 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700/60 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-cyan-400"></i>
+                        <span>INFORMACIÓN</span>
+                    </button>
+                    <button onclick="openModal('examplesModal')" class="px-3.5 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700/60 flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-blue-400"></i>
+                        <span>EJEMPLOS INTRODUCTORIOS</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
     </header>
 
-    <div class="app-container">
-      
-      <!-- TECLADO GLOBAL SUPERIOR -->
-      <div class="card">
-        <h4 style="margin-top: 0; color: var(--secondary);">Teclado y Simbología General</h4>
-        <div class="global-keyboard">
-          <button class="tool-btn" onclick="mqCommand('+')">+</button>
-          <button class="tool-btn" onclick="mqCommand('-')">-</button>
-          <button class="tool-btn" onclick="mqCommand('*')">×</button>
-          <button class="tool-btn" onclick="mqWrite('\\frac{}{}')">a/b</button>
-          <button class="tool-btn" onclick="mqTypedText('(')">(</button>
-          <button class="tool-btn" onclick="mqTypedText(')')">)</button>
-          <button class="tool-btn" onclick="mqTypedText('[')">[ ]</button>
-          <button class="tool-btn" onclick="mqTypedText('{')">{ }</button>
-          <button class="tool-btn" onclick="mqTypedText('x')">x</button>
-          <button class="tool-btn" onclick="mqTypedText('y')">y</button>
-          <button class="tool-btn" onclick="mqCmdPower('2')">x²</button>
-          <button class="tool-btn" onclick="mqCmdPower('n')">xⁿ</button>
-          <button class="tool-btn" onclick="mqWrite('\\sqrt{}')">√x</button>
-          <button class="tool-btn" onclick="mqTypedText('f(x)')">f(x)</button>
-          <button class="tool-btn" onclick="mqWrite('\\lim_{x \\to 0}')">lim</button>
-          <button class="tool-btn" onclick="mqWrite('\\frac{d}{dx}')">d/dx</button>
-          <button class="tool-btn" onclick="mqWrite('\\int')">∫</button>
-          <button class="tool-btn btn-clear" onclick="limpiarTodo()">AC</button>
-          <button class="tool-btn" onclick="borrarCaracter()">⌫</button>
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+
+        <!-- CATEGORÍAS (SELECTOR) -->
+        <section class="bg-slate-900/80 p-2 rounded-2xl border border-slate-800/80 backdrop-blur-sm shadow-xl">
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5" id="categoryTabs">
+                <button onclick="selectCategory('arithmetic')" data-cat="arithmetic" class="cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md">
+                    <i class="fa-solid fa-plus-minus text-sm"></i> Aritmética
+                </button>
+                <button onclick="selectCategory('algebra')" data-cat="algebra" class="cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-square-root-variable text-sm"></i> Álgebra
+                </button>
+                <button onclick="selectCategory('functions')" data-cat="functions" class="cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-chart-line text-sm"></i> Funciones
+                </button>
+                <button onclick="selectCategory('limits')" data-cat="limits" class="cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-arrows-to-line text-sm"></i> Límites
+                </button>
+                <button onclick="selectCategory('derivatives')" data-cat="derivatives" class="cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-wave-square text-sm"></i> Derivadas
+                </button>
+                <button onclick="selectCategory('integrals')" data-cat="integrals" class="cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-infinity text-sm"></i> Integrales
+                </button>
+                <button onclick="selectCategory('applications')" data-cat="applications" class="cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700 col-span-2 sm:col-span-1">
+                    <i class="fa-solid fa-microchip text-sm"></i> Aplicaciones
+                </button>
+            </div>
+        </section>
+
+        <!-- PANEL DE ENTRADA Y TECLADO -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-5">
+            
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span id="currentCatIcon" class="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg text-lg">
+                        <i class="fa-solid fa-plus-minus"></i>
+                    </span>
+                    <div>
+                        <h2 id="currentCatTitle" class="font-bold text-slate-100">Aritmética</h2>
+                        <p id="currentCatDesc" class="text-xs text-slate-400">Resuelve operaciones numéricas detalladas, fracciones y potencias.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TECLADO VIRTUAL MATEMÁTICO (MINI-KEYPAD) -->
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-regular fa-keyboard text-cyan-400"></i> Teclado Matemático
+                    </span>
+                    <span class="text-[11px] text-slate-500">Haz clic para insertar en el campo de texto activo</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5" id="keypadButtons">
+                    <button type="button" onclick="insertSymbol('x')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-cyan-300 border border-slate-700/50">x</button>
+                    <button type="button" onclick="insertSymbol('^2')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-cyan-300 border border-slate-700/50">x²</button>
+                    <button type="button" onclick="insertSymbol('^')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-cyan-300 border border-slate-700/50">xⁿ</button>
+                    <button type="button" onclick="insertSymbol('sqrt(')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-cyan-300 border border-slate-700/50">√x</button>
+                    <button type="button" onclick="insertSymbol('pi')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-emerald-300 border border-slate-700/50">π</button>
+                    <button type="button" onclick="insertSymbol('e')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-emerald-300 border border-slate-700/50">e</button>
+                    <button type="button" onclick="insertSymbol('+')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-amber-300 border border-slate-700/50">+</button>
+                    <button type="button" onclick="insertSymbol('-')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-amber-300 border border-slate-700/50">-</button>
+                    <button type="button" onclick="insertSymbol('*')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-amber-300 border border-slate-700/50">*</button>
+                    <button type="button" onclick="insertSymbol('/')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-amber-300 border border-slate-700/50">/</button>
+                    <button type="button" onclick="insertSymbol('sin(')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-purple-300 border border-slate-700/50">sin</button>
+                    <button type="button" onclick="insertSymbol('cos(')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-purple-300 border border-slate-700/50">cos</button>
+                    <button type="button" onclick="insertSymbol('tan(')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-purple-300 border border-slate-700/50">tan</button>
+                    <button type="button" onclick="insertSymbol('ln(')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-purple-300 border border-slate-700/50">ln</button>
+                    <button type="button" onclick="insertSymbol('log(')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-purple-300 border border-slate-700/50">log</button>
+                    <button type="button" onclick="insertSymbol('(')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-slate-300 border border-slate-700/50">(</button>
+                    <button type="button" onclick="insertSymbol(')')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-slate-300 border border-slate-700/50">)</button>
+                    <button type="button" onclick="insertSymbol('infinity')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono text-pink-300 border border-slate-700/50">∞</button>
+                </div>
+            </div>
+
+            <!-- FORMULARIO DINÁMICO DE INPUTS POR CATEGORÍA -->
+            <form id="mathForm" onsubmit="handleSolve(event)" class="space-y-4">
+                
+                <!-- Input Principal (Expresión o Función) -->
+                <div>
+                    <label id="mainInputLabel" for="mainInput" class="block text-xs font-semibold text-slate-300 mb-1.5">Expresión Matemática</label>
+                    <div class="relative">
+                        <input type="text" id="mainInput" required placeholder="Ejemplo: (2+3)*5 - sqrt(16)" 
+                            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono text-base sm:text-lg shadow-inner">
+                        <button type="button" onclick="clearInput()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CONTROLES ADICIONALES DINÁMICOS POR CATEGORÍA -->
+                <div id="dynamicControls" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Se inyectan dinámicamente según la categoría seleccionada -->
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-base">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Resolver Paso a Paso</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- SECCIÓN DE RESULTADOS Y PROCEDIMIENTO -->
+        <section id="resultsSection" class="hidden space-y-6">
+            
+            <!-- TARJETA DEL RESULTADO FINAL -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-900 border-2 border-cyan-500/50 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
+                            <i class="fa-solid fa-check text-xl"></i>
+                        </span>
+                        <div>
+                            <h3 class="text-xs uppercase font-bold text-slate-400 tracking-wider">Resultado Final Simplificado / Factorizado</h3>
+                            <p class="text-xs text-slate-500">Expresión optimizada y profesional</p>
+                        </div>
+                    </div>
+                    <span class="text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-cyan-300 w-fit">
+                        Simplificación Máxima
+                    </span>
+                </div>
+                <div id="finalResultMath" class="text-xl sm:text-2xl font-bold text-cyan-300 overflow-x-auto py-2">
+                    <!-- LaTeX Rendered Result -->
+                </div>
+            </div>
+
+            <!-- PASO A PASO DETALLADO -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-6">
+                    <h3 class="font-bold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol text-cyan-400"></i>
+                        <span>Procedimiento Detallado (Paso a Paso)</span>
+                    </h3>
+                    <span id="stepCountBadge" class="text-xs bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2.5 py-1 rounded-full font-medium">0 Pasos</span>
+                </div>
+
+                <div id="stepsContainer" class="space-y-4">
+                    <!-- Pasos insertados dinámicamente -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500 mt-auto">
+        <p>MathAssistant Pro &copy; 2026 - Asistente Matemático Inteligente con Motor CAS Integrado</p>
+    </footer>
+
+    <!-- MODAL: INFORMACIÓN (Placeholder Solicitado) -->
+    <div id="infoModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('infoModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl">
+                    <i class="fa-solid fa-circle-info text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-100">Información de la Página</h3>
+            </div>
+            <div class="space-y-3 text-sm text-slate-300 border-t border-b border-slate-800 py-4 my-2">
+                <p class="font-semibold text-cyan-400">Detalles de la Aplicación y Autores:</p>
+                <p class="italic text-slate-400 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                    [ Ventana de Marcador de Posición ]<br>
+                    Próximamente se integrarán la descripción detallada del proyecto, los autores, la versión del motor de resolución matemática y los créditos institucionales.
+                </p>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('infoModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium transition-all">
+                    Cerrar
+                </button>
+            </div>
         </div>
-      </div>
-
-      <!-- ESPACIO DE TRABAJO CENTRAL -->
-      <div class="card">
-        <h3 style="margin-top: 0;">Espacio de Trabajo:</h3>
-        
-        <div id="error-alert" class="alert-error"></div>
-
-        <div class="input-row">
-          <span id="math-field"></span>
-        </div>
-
-        <!-- CATEGORÍAS INFERIORES SEPARADAS E INDEPENDIENTES -->
-        <div class="category-section">
-          <label style="font-weight: bold; font-size: 0.9rem; color: #64748b;">Selecciona el modo de resolución:</label>
-          <div class="category-grid">
-            <button class="cat-btn" onclick="resolverOperacion('aritmetica')">Aritmética</button>
-            <button class="cat-btn" onclick="resolverOperacion('algebra')">Álgebra</button>
-            <button class="cat-btn" onclick="resolverOperacion('funciones')">Funciones</button>
-            <button class="cat-btn" onclick="resolverOperacion('limites')">Límites</button>
-            <button class="cat-btn" onclick="resolverOperacion('derivadas')">Derivadas</button>
-            <button class="cat-btn" onclick="resolverOperacion('integrales')">Integrales</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECCIÓN DE RESULTADOS -->
-      <div id="result-card" class="card result-section">
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchTab('pasos')">Procedimiento Paso a Paso</button>
-          <button class="tab-btn" onclick="switchTab('formulas')">Fórmulas Utilizadas</button>
-          <button class="tab-btn" onclick="switchTab('grafica')">Gráfica</button>
-        </div>
-
-        <!-- Tab Pasos -->
-        <div id="tab-pasos" class="tab-content">
-          <h4>Procedimiento:</h4>
-          <div id="procedure-container"></div>
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-top: 15px;">
-            <strong style="color: #166534;">Respuesta Final:</strong>
-            <div id="final-answer" style="font-size: 1.2rem; margin-top: 5px; overflow-x: auto;"></div>
-          </div>
-        </div>
-
-        <!-- Tab Fórmulas -->
-        <div id="tab-formulas" class="tab-content" style="display: none;">
-          <h4>Fórmulas Aplicadas:</h4>
-          <div id="formulas-container"></div>
-        </div>
-
-        <!-- Tab Gráfica -->
-        <div id="tab-grafica" class="tab-content" style="display: none;">
-          <h4>Representación Visual:</h4>
-          <div id="plot" style="width: 100%; height: 320px;"></div>
-        </div>
-      </div>
-
     </div>
-  </div>
 
-  <script>
-    var MQ = MathQuill.getInterface(2);
-    var mathFieldSpan = document.getElementById('math-field');
-    var mathField = MQ.MathField(mathFieldSpan, {
-      spaceBehavesLikeTab: true
-    });
+    <!-- MODAL: EJEMPLOS INTRODUCTORIOS (Placeholder Solicitado) -->
+    <div id="examplesModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeModal('examplesModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-3 bg-blue-500/20 text-blue-400 rounded-xl">
+                    <i class="fa-solid fa-book-open text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-100">Ejemplos Introductorios</h3>
+            </div>
+            <div class="space-y-3 text-sm text-slate-300 border-t border-b border-slate-800 py-4 my-2">
+                <p class="font-semibold text-blue-400">Guía de Ejercicios de Muestra:</p>
+                <p class="italic text-slate-400 bg-slate-950 p-3 rounded-lg border border-slate-800">
+                    [ Ventana de Marcador de Posición ]<br>
+                    Próximamente se listarán ejemplos guiados interactivos para cada una de las 7 categorías principales (Aritmética, Álgebra, Funciones, Límites, Derivadas, Integrales y Aplicaciones).
+                </p>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('examplesModal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium transition-all">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
 
-    function iniciarApp() {
-      document.getElementById('welcome-screen').style.display = 'none';
-      document.getElementById('main-app').style.display = 'block';
-      mathField.focus();
-    }
+    <!-- SCRIPT PRINCIPAL DE LÓGICA Y RESOLUCIÓN -->
+    <script>
+        // Configuración de Estado Global
+        let currentCategory = 'arithmetic';
+        let activeInputId = 'mainInput';
 
-    function regresarMenu() {
-      document.getElementById('main-app').style.display = 'none';
-      document.getElementById('welcome-screen').style.display = 'flex';
-    }
-
-    function probarEjemploOficial() {
-      iniciarApp();
-      mathField.latex("x^3-6x^2+9x+1");
-      resolverOperacion('derivadas');
-    }
-
-    function mqTypedText(text) {
-      mathField.typedText(text);
-      mathField.focus();
-    }
-
-    function mqCommand(cmd) {
-      mathField.cmd(cmd);
-      mathField.focus();
-    }
-
-    function mqWrite(latexStr) {
-      mathField.write(latexStr);
-      mathField.focus();
-    }
-
-    function mqCmdPower(exp) {
-      mathField.typedText('^' + exp);
-      mathField.focus();
-    }
-
-    function limpiarTodo() {
-      mathField.latex('');
-      document.getElementById('result-card').style.display = 'none';
-      ocultarError();
-      mathField.focus();
-    }
-
-    function borrarCaracter() {
-      mathField.keystroke('Backspace');
-      mathField.focus();
-    }
-
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-' + tabName).style.display = 'block';
-      event.target.classList.add('active');
-    }
-
-    function toggleExplicacion(id) {
-      const exp = document.getElementById('exp-' + id);
-      exp.style.display = exp.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function mostrarError(msg) {
-      const alert = document.getElementById('error-alert');
-      alert.innerText = msg;
-      alert.style.display = 'block';
-      document.getElementById('result-card').style.display = 'none';
-    }
-
-    function ocultarError() {
-      document.getElementById('error-alert').style.display = 'none';
-    }
-
-    // NORMALIZADOR AVANZADO PARA TRADUCIR LATEX Y SÍMBOLOS A MATH.JS
-    function normalizarExpresion(rawInput, latexInput) {
-      let clean = (latexInput || rawInput || '')
-        .replace(/f\s*\(\s*x\s*\)\s*=?/gi, '')
-        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '(\$1)/($2)') .replace(/\\sqrt\{([^}]+)\}/g, 'sqrt($1)')
-        .replace(/\\left|\\right/g, '')
-        .replace(/\^\{(\d+)\}/g, '^\$1')
-        .replace(/\{(\d+)\}/g, '\$1')
-        .replace(/[\{\}]/g, '')
-        .replace(/\\cdot/g, '*')
-        .replace(/\\times/g, '*')
-        .replace(/\s+/g, '')
-        .trim();
-
-      // Inserción de multiplicación implícita (ej. 2x -> 2*x, 5(x) -> 5*(x))
-      clean = clean.replace(/(\d)([a-zA-Z\(])/g, '\$1*\$2'); clean = clean.replace(/(\))([a-zA-Z0-9\(])/g, '\$1*\$2');
-
-      return clean;
-    }
-
-    // MOTOR SIMBÓLICO DE INTEGRACIÓN POLINÓMICA CÁLCULO
-    function integrarSimbilico(cleanInput) {
-      try {
-        const node = math.parse(cleanInput);
-        
-        // Integrador por términos polinómicos
-        function integrarNodo(n) {
-          if (n.isSymbolNode && n.name === 'x') {
-            return '\\frac{x^2}{2}';
-          }
-          if (n.isConstantNode) {
-            return `${n.value}x`;
-          }
-          if (n.isOperatorNode) {
-            if (n.isBinary() && n.op === '^' && n.args[0].isSymbolNode && n.args[0].name === 'x' && n.args[1].isConstantNode) {
-              const exp = n.args[1].value;
-              const nuevoExp = exp + 1;
-              return `\\frac{x^{${nuevoExp}}}{${nuevoExp}}`;
+        // Definición de Metadata por Categoría
+        const categoryData = {
+            arithmetic: {
+                title: 'Aritmética',
+                desc: 'Resuelve operaciones numéricas, suma de fracciones, potencias y simplificación.',
+                icon: 'fa-plus-minus',
+                placeholder: 'Ejemplo: 3/4 + (5*2) - sqrt(64)',
+                label: 'Expresión Aritmética'
+            },
+            algebra: {
+                title: 'Álgebra',
+                desc: 'Factorización rigurosa (diferencia de cuadrados, binomios, trinomios) y simplificación máxima.',
+                icon: 'fa-square-root-variable',
+                placeholder: 'Ejemplo: x^2 - 16  ó  x^2 + 6*x + 9',
+                label: 'Expresión Algebraica a Factorizar / Simplificar'
+            },
+            functions: {
+                title: 'Funciones',
+                desc: 'Evaluación paso a paso de la función en rangos estándar [-3..3] o valor específico.',
+                icon: 'fa-chart-line',
+                placeholder: 'Ejemplo: 2*x^2 - 3*x + 1',
+                label: 'Función f(x)'
+            },
+            limits: {
+                title: 'Límites',
+                desc: 'Cálculo de límites con punto de tendencia customizable (números, 0, ∞, -∞, π, e).',
+                icon: 'fa-arrows-to-line',
+                placeholder: 'Ejemplo: (x^2 - 4) / (x - 2)',
+                label: 'Función a evaluar'
+            },
+            derivatives: {
+                title: 'Derivadas',
+                desc: 'Cálculo de derivadas con respecto a una variable con paso a paso detallado.',
+                icon: 'fa-wave-square',
+                placeholder: 'Ejemplo: 3*x^3 - 5*x^2 + 7*x - 2',
+                label: 'Función a derivar f(x)'
+            },
+            integrals: {
+                title: 'Integrales',
+                desc: 'Integrales indefinidas (+ C) y definidas [a, b] con Teorema Fundamental del Cálculo.',
+                icon: 'fa-infinity',
+                placeholder: 'Ejemplo: 3*x^2 + 2*x',
+                label: 'Integrando f(x)'
+            },
+            applications: {
+                title: 'Aplicaciones',
+                desc: 'Problemas prácticos aplicados: Área bajo la curva, optimización y modelo exponencial.',
+                icon: 'fa-microchip',
+                placeholder: 'Selecciona una aplicación de la lista abajo...',
+                label: 'Modelo o Expresión Básica'
             }
-            if (n.isBinary() && n.op === '*' && n.args[0].isConstantNode) {
-              const coef = n.args[0].value;
-              const subInt = integrarNodo(n.args[1]);
-              return `${coef} \\cdot \\left(${subInt}\\right)`;
+        };
+
+        // Escuchar foco en inputs para el teclado virtual
+        document.addEventListener('focusin', (e) => {
+            if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                activeInputId = e.target.id;
             }
-            if (n.isBinary() && (n.op === '+' || n.op === '-')) {
-              return `${integrarNodo(n.args[0])} ${n.op} ${integrarNodo(n.args[1])}`;
-            }
-          }
-          return `\\int (${n.toTex()}) dx`;
+        });
+
+        // Insertar Símbolo del Teclado Virtual
+        function insertSymbol(symbol) {
+            const input = document.getElementById(activeInputId) || document.getElementById('mainInput');
+            const start = input.selectionStart || 0;
+            const end = input.selectionEnd || 0;
+            const text = input.value;
+            input.value = text.substring(0, start) + symbol + text.substring(end);
+            input.focus();
+            input.setSelectionRange(start + symbol.length, start + symbol.length);
         }
 
-        return integrarNodo(node) + ' + C';
-      } catch (e) {
-        return `\\int (${cleanInput}) dx + C`;
-      }
-    }
-
-    function resolverOperacion(categoria) {
-      ocultarError();
-      const latexInput = mathField.latex();
-      const plainInput = mathField.text();
-
-      const cleanInput = normalizarExpresion(plainInput, latexInput);
-
-      if (!cleanInput) {
-        mostrarError("Por favor, ingresa una expresión en el espacio de trabajo.");
-        return;
-      }
-
-      try {
-        document.getElementById('result-card').style.display = 'block';
-
-        // 1. MÓDULO ARITMÉTICA
-        if (categoria === 'aritmetica') {
-          const resultado = math.evaluate(cleanInput);
-          document.getElementById('procedure-container').innerHTML = `
-            <div class="step-box">
-              <strong>Paso 1: Evaluación Aritmética Directa</strong>
-              <div>\\[ ${latexInput || cleanInput} = ${resultado} \\]</div>
-              <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
-              <div id="exp-1" class="explanation-text">Se calcula el valor numérico siguiendo la jerarquía de operaciones básicas.</div>
-            </div>
-          `;
-          document.getElementById('final-answer').innerHTML = `\\[ ${resultado} \\]`;
-          document.getElementById('formulas-container').innerHTML = `<p>Aritmética básica y jerarquía de operadores.</p>`;
-          document.getElementById('plot').innerHTML = "<p style='color: #64748b; padding: 20px;'>No hay gráfica disponible para valores aritméticos.</p>";
-
-        // 2. MÓDULO ÁLGEBRA
-        } else if (categoria === 'algebra') {
-          const difCuadradosMatch = cleanInput.match(/^x\^2-(\d+)\$/i);
-
-          if (difCuadradosMatch) {
-            const num = parseInt(difCuadradosMatch[1]);
-            const raizNum = Math.sqrt(num);
-
-            document.getElementById('procedure-container').innerHTML = `
-              <div class="step-box">
-                <strong>Paso 1: Identificar el caso de factorización (Diferencia de Cuadrados)</strong>
-                <div>\\[ x^2 - ${num} = (x - ${raizNum})(x + ${raizNum}) \\]</div>
-                <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
-                <div id="exp-1" class="explanation-text">Se aplica la identidad \\(a^2 - b^2 = (a-b)(a+b)\\) donde \\(a = x\\) y \\(b = \\sqrt{${num}} = ${raizNum}\\).</div>
-              </div>
-
-              <div class="step-box">
-                <strong>Paso 2: Hallar los valores de $x$ (Igualar a cero)</strong>
-                <div>\\[ x^2 - ${num} = 0 \\implies x_1 = ${raizNum}, \\quad x_2 = -${raizNum} \\]</div>
-                <button class="toggle-explanation" onclick="toggleExplicacion(2)">¿Qué se hizo aquí?</button>
-                <div id="exp-2" class="explanation-text">Se despeja \\(x\\) para obtener las raíces o ceros exactos de la ecuación algebraica.</div>
-              </div>
-            `;
-
-            document.getElementById('final-answer').innerHTML = `
-              <div><strong>Factorización:</strong> \\[ (x - ${raizNum})(x + ${raizNum}) \\]</div>
-              <div><strong>Valores de $x$ (Raíces):</strong> \\[ x_1 = ${raizNum}, \\quad x_2 = -${raizNum} \\]</div>
-            `;
-          } else {
-            const node = math.parse(cleanInput);
-            document.getElementById('procedure-container').innerHTML = `
-              <div class="step-box">
-                <strong>Paso 1: Simplificación y Expresión Algebraica</strong>
-                <div>\\[ ${node.toTex()} \\]</div>
-              </div>
-            `;
-            document.getElementById('final-answer').innerHTML = `\\[ ${node.toTex()} \\]`;
-          }
-
-          document.getElementById('formulas-container').innerHTML = `<ul><li>Identidades algebraicas y productos notables.</li></ul>`;
-          functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
-
-        // 3. MÓDULO FUNCIONES
-        } else if (categoria === 'funciones') {
-          const node = math.parse(cleanInput);
-          
-          document.getElementById('procedure-container').innerHTML = `
-            <div class="step-box">
-              <strong>Paso 1: Definición de la Función</strong>
-              <div>\\[ f(x) = ${node.toTex()} \\]</div>
-              <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
-              <div id="exp-1" class="explanation-text">Se registra la función matemática ingresada para su estudio de dominio, rango y tabulación.</div>
-            </div>
-            <div class="step-box">
-              <strong>Paso 2: Evaluación en puntos clave ($x = 0, 1, 2$)</strong>
-              <div>\\(f(0) = ${math.evaluate(cleanInput, {x: 0})}\\), \\(f(1) = ${math.evaluate(cleanInput, {x: 1})}\\), \\(f(2) = ${math.evaluate(cleanInput, {x: 2})}\\)</div>
-            </div>
-          `;
-
-          document.getElementById('final-answer').innerHTML = `\\[ f(x) = ${node.toTex()} \\] (Función Analizada)`;
-          document.getElementById('formulas-container').innerHTML = `<p>Evaluación de funciones, dominio y representación gráfica.</p>`;
-          functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
-
-        // 4. MÓDULO DERIVADAS
-        } else if (categoria === 'derivadas') {
-          const node = math.parse(cleanInput);
-          const derivada = math.derivative(node, 'x');
-
-          document.getElementById('procedure-container').innerHTML = `
-            <div class="step-box">
-              <strong>Paso 1: Plantear la derivada</strong>
-              <div>\\[ \\frac{d}{dx} \\left[ ${node.toTex()} \\right] \\]</div>
-            </div>
-            <div class="step-box">
-              <strong>Paso 2: Resultado de la Derivada</strong>
-              <div>\\[ f'(x) = ${derivada.toTex()} \\]</div>
-              <button class="toggle-explanation" onclick="toggleExplicacion(2)">¿Qué se hizo aquí?</button>
-              <div id="exp-2" class="explanation-text">Se aplica la regla de la potencia \\(\\frac{d}{dx}[x^n] = n x^{n-1}\\) término a término.</div>
-            </div>
-          `;
-
-          document.getElementById('final-answer').innerHTML = `\\[ f'(x) = ${derivada.toTex()} \\]`;
-          document.getElementById('formulas-container').innerHTML = `<ul><li>Regla de la potencia: \\(\\frac{d}{dx}[x^n] = n x^{n-1}\\)</li></ul>`;
-          functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
-
-        // 5. MÓDULO INTEGRALES (MOTOR DINÁMICO)
-        } else if (categoria === 'integrales') {
-          const node = math.parse(cleanInput);
-          const resIntegral = integrarSimbilico(cleanInput);
-
-          document.getElementById('procedure-container').innerHTML = `
-            <div class="step-box">
-              <strong>Paso 1: Plantear la integral indefinida</strong>
-              <div>\\[ \\int \\left( ${node.toTex()} \\right) dx \\]</div>
-              <button class="toggle-explanation" onclick="toggleExplicacion(1)">¿Qué se hizo aquí?</button>
-              <div id="exp-1" class="explanation-text">Se aplica el operador de integración indefinida a la función polinómica.</div>
-            </div>
-            <div class="step-box">
-              <strong>Paso 2: Integración término a término</strong>
-              <div>\\[ \\int f(x) dx = ${resIntegral} \\]</div>
-              <button class="toggle-explanation" onclick="toggleExplicacion(2)">¿Qué se hizo aquí?</button>
-              <div id="exp-2" class="explanation-text">Se integra cada término mediante la regla \\(\\int x^n dx = \\frac{x^{n+1}}{n+1} + C\\).</div>
-            </div>
-          `;
-
-          document.getElementById('final-answer').innerHTML = `\\[ \\int f(x) dx = ${resIntegral} \\]`;
-          document.getElementById('formulas-container').innerHTML = `<ul><li>Regla de la potencia para integración: \\(\\int x^n dx = \\frac{x^{n+1}}{n+1} + C\\)</li></ul>`;
-          functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
-
-        // 6. MÓDULO LÍMITES
-        } else if (categoria === 'limites') {
-          const node = math.parse(cleanInput);
-          document.getElementById('procedure-container').innerHTML = `
-            <div class="step-box">
-              <strong>Paso 1: Evaluación del límite ($x \\to 0$)</strong>
-              <div>\\[ \\lim_{x \\to 0} \\left( ${node.toTex()} \\right) = ${math.evaluate(cleanInput, {x: 0})} \\]</div>
-            </div>
-          `;
-          document.getElementById('final-answer').innerHTML = `\\[ \\lim_{x \\to 0} f(x) = ${math.evaluate(cleanInput, {x: 0})} \\]`;
-          document.getElementById('formulas-container').innerHTML = `<p>Teoremas de límites y continuidad.</p>`;
-          functionPlot({ target: '#plot', data: [{ fn: cleanInput }], grid: true });
+        function clearInput() {
+            document.getElementById('mainInput').value = '';
+            document.getElementById('mainInput').focus();
         }
 
-        MathJax.typesetPromise();
+        // Selección de Categorías
+        function selectCategory(cat) {
+            currentCategory = cat;
+            const info = categoryData[cat];
 
-      } catch (err) {
-        mostrarError("Error al procesar la expresión. Verifica los datos ingresados.");
-      }
-    }
-  </script>
+            // Actualizar botones de categoría UI
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.className = "cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md";
+                } else {
+                    btn.className = "cat-btn px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-center flex flex-col sm:flex-row items-center justify-center gap-2 bg-slate-800 text-slate-300 hover:bg-slate-700";
+                }
+            });
+
+            // Actualizar Encabezado de Sección
+            document.getElementById('currentCatTitle').innerText = info.title;
+            document.getElementById('currentCatDesc').innerText = info.desc;
+            document.getElementById('currentCatIcon').innerHTML = `<i class="fa-solid ${info.icon}"></i>`;
+            
+            // Actualizar Main Input
+            document.getElementById('mainInputLabel').innerText = info.label;
+            document.getElementById('mainInput').placeholder = info.placeholder;
+
+            // Renderizar Controles Dinámicos Específicos
+            renderDynamicControls(cat);
+            
+            // Ocultar resultados previos
+            document.getElementById('resultsSection').classList.add('hidden');
+        }
+
+        // Renderizado de Controles Secundarios según la Categoría
+        function renderDynamicControls(cat) {
+            const container = document.getElementById('dynamicControls');
+            container.innerHTML = '';
+
+            if (cat === 'functions') {
+                container.innerHTML = `
+                    <div class="col-span-2 space-y-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <label class="block text-xs font-semibold text-slate-300">Modo de Evaluación</label>
+                        <div class="flex flex-wrap gap-4 text-xs text-slate-300">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="funcEvalMode" value="default" checked onchange="toggleFuncMode()" class="text-cyan-500 focus:ring-cyan-500">
+                                Evaluar en Rango Estándar [-3, -2, -1, 0, 1, 2, 3]
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="funcEvalMode" value="custom" onchange="toggleFuncMode()" class="text-cyan-500 focus:ring-cyan-500">
+                                Evaluar en Valor Específico
+                            </label>
+                        </div>
+                        <div id="customValueContainer" class="hidden mt-2">
+                            <label class="block text-xs text-slate-400 mb-1">Valor específico para x:</label>
+                            <input type="text" id="funcCustomX" placeholder="Ejemplo: 5" value="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-100 text-sm font-mono">
+                        </div>
+                    </div>
+                `;
+            } else if (cat === 'limits') {
+                container.innerHTML = `
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Punto al que tiende x ($x \\to a$)</label>
+                        <input type="text" id="limitTarget" value="0" required placeholder="Ejemplo: 2, 0, infinity, -infinity, pi, e" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono text-sm">
+                    </div>
+                `;
+            } else if (cat === 'derivatives') {
+                container.innerHTML = `
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Variable respecto a la cual derivar</label>
+                        <input type="text" id="derivVar" value="x" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-mono text-sm">
+                    </div>
+                `;
+            } else if (cat === 'integrals') {
+                container.innerHTML = `
+                    <div class="col-span-2 space-y-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <label class="block text-xs font-semibold text-slate-300">Tipo de Integral</label>
+                        <div class="flex gap-4 text-xs text-slate-300">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="integralType" value="indefinite" checked onchange="toggleIntegralLimits()" class="text-cyan-500">
+                                Integral Indefinida
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="integralType" value="definite" onchange="toggleIntegralLimits()" class="text-cyan-500">
+                                Integral Definida
+                            </label>
+                        </div>
+                        <div id="integralLimitsContainer" class="hidden grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-[11px] text-slate-400">Límite Inferior (a)</label>
+                                <input type="text" id="limitA" value="0" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 font-mono text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400">Límite Superior (b)</label>
+                                <input type="text" id="limitB" value="3" placeholder="3" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 font-mono text-sm">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (cat === 'applications') {
+                container.innerHTML = `
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Seleccionar Tipo de Aplicación</label>
+                        <select id="appTypeSelect" onchange="updateAppExample()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 text-sm">
+                            <option value="area">Área Bajo la Curva en un Intervalo [a, b]</option>
+                            <option value="critical">Puntos Críticos y Máximos/Mínimos (Optimización)</option>
+                            <option value="growth">Crecimiento Pob. Exponential f(t) = P0 * e^(k*t)</option>
+                        </select>
+                    </div>
+                `;
+            }
+        }
+
+        // Toggles para controles opcionales
+        function toggleFuncMode() {
+            const mode = document.querySelector('input[name="funcEvalMode"]:checked').value;
+            const container = document.getElementById('customValueContainer');
+            if (mode === 'custom') {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function toggleIntegralLimits() {
+            const type = document.querySelector('input[name="integralType"]:checked').value;
+            const container = document.getElementById('integralLimitsContainer');
+            if (type === 'definite') {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function updateAppExample() {
+            const type = document.getElementById('appTypeSelect').value;
+            const mainInput = document.getElementById('mainInput');
+            if (type === 'area') {
+                mainInput.value = 'x^2';
+            } else if (type === 'critical') {
+                mainInput.value = 'x^3 - 3*x';
+            } else if (type === 'growth') {
+                mainInput.value = '100 * e^(0.05 * t)';
+            }
+        }
+
+        // CONTROLADOR PRINCIPAL DE RESOLUCIÓN
+        function handleSolve(e) {
+            e.preventDefault();
+            const inputExpr = document.getElementById('mainInput').value.trim();
+            if (!inputExpr) return;
+
+            let steps = [];
+            let finalResultLaTeX = '';
+
+            try {
+                switch (currentCategory) {
+                    case 'arithmetic':
+                        ({ steps, finalResultLaTeX } = solveArithmetic(inputExpr));
+                        break;
+                    case 'algebra':
+                        ({ steps, finalResultLaTeX } = solveAlgebra(inputExpr));
+                        break;
+                    case 'functions':
+                        ({ steps, finalResultLaTeX } = solveFunctions(inputExpr));
+                        break;
+                    case 'limits':
+                        ({ steps, finalResultLaTeX } = solveLimits(inputExpr));
+                        break;
+                    case 'derivatives':
+                        ({ steps, finalResultLaTeX } = solveDerivatives(inputExpr));
+                        break;
+                    case 'integrals':
+                        ({ steps, finalResultLaTeX } = solveIntegrals(inputExpr));
+                        break;
+                    case 'applications':
+                        ({ steps, finalResultLaTeX } = solveApplications(inputExpr));
+                        break;
+                }
+
+                renderResults(steps, finalResultLaTeX);
+
+            } catch (err) {
+                renderError("No se pudo procesar la expresión. Verifica la sintaxis del ejercicio. Error: " + err.message);
+            }
+        }
+
+        // --- MOTORES DE RESOLUCIÓN MATEMÁTICA ---
+
+        // 1. ARITMÉTICA
+        function solveArithmetic(expr) {
+            const steps = [];
+            steps.push({
+                title: "Expresión Original",
+                explanation: "Se ingresa la expresión aritmética para su evaluación.",
+                formula: "A = " + toLaTeX(expr)
+            });
+
+            const parsed = math.parse(expr);
+            const compiled = parsed.compile();
+            const resultVal = compiled.evaluate();
+
+            steps.push({
+                title: "Jerarquía de Operaciones y Simplificación",
+                explanation: "Se resuelven primero los paréntesis, exponentes/raíces, seguidos de multiplicaciones, divisiones y sumas.",
+                formula: "A = " + resultVal
+            });
+
+            let finalRes = resultVal;
+            if (typeof resultVal === 'number' && !Number.isInteger(resultVal)) {
+                try {
+                    const frac = math.fraction(resultVal);
+                    finalRes = `${frac.n}/${frac.d} \\quad (\\approx ${resultVal.toFixed(4)})`;
+                    steps.push({
+                        title: "Conversión a Fracción Exacta",
+                        explanation: "Expresión expresada en forma de fracción irreducible.",
+                        formula: "A = " + finalRes
+                    });
+                } catch (e) {}
+            }
+
+            return { steps, finalResultLaTeX: "A = " + finalRes };
+        }
+
+        // 2. ÁLGEBRA
+        function solveAlgebra(expr) {
+            const steps = [];
+            steps.push({
+                title: "Expresión Algebraica Inicial",
+                explanation: "Expresión ingresada para simplificación y factorización técnica.",
+                formula: "E(x) = " + toLaTeX(expr)
+            });
+
+            // Usando Algebrite para análisis simbólico
+            let expanded = Algebrite.run(`expand(${expr})`).toString();
+            steps.push({
+                title: "Expansión y Orden de Términos",
+                explanation: "Se expanden los productos notables y se agrupan términos semejantes.",
+                formula: "E(x) = " + toLaTeX(expanded),
+                usedFormula: "(a \\pm b)^2 = a^2 \\pm 2ab + b^2"
+            });
+
+            let factored = Algebrite.run(`factor(${expr})`).toString();
+            
+            // Detección especial de patrones de factorización
+            let patternDetected = "Factorización por M.C.D o Agrupación";
+            if (expr.includes('^2') && expr.includes('-')) {
+                patternDetected = "Diferencia de Cuadrados / Trinomio";
+            }
+
+            steps.push({
+                title: "Factorización Completa",
+                explanation: `Se identifica el patrón algebraico (${patternDetected}) para descomponer en factores primos.`,
+                formula: "E(x) = " + toLaTeX(factored),
+                usedFormula: "a^2 - b^2 = (a - b)(a + b)"
+            });
+
+            let simplified = Algebrite.run(`simplify(${factored})`).toString();
+            steps.push({
+                title: "Forma Simplificada Final",
+                explanation: "Expresión reducida a su mínima expresión profesional.",
+                formula: "E(x) = " + toLaTeX(simplified)
+            });
+
+            return { steps, finalResultLaTeX: "E(x) = " + toLaTeX(factored) };
+        }
+
+        // 3. FUNCIONES
+        function solveFunctions(expr) {
+            const steps = [];
+            steps.push({
+                title: "Definición de la Función",
+                explanation: "Se analiza la regla de correspondencia de la función $f(x)$.",
+                formula: "f(x) = " + toLaTeX(expr)
+            });
+
+            const mode = document.querySelector('input[name="funcEvalMode"]:checked')?.value || 'default';
+            let valuesToEval = [-3, -2, -1, 0, 1, 2, 3];
+
+            if (mode === 'custom') {
+                const customVal = parseFloat(document.getElementById('funcCustomX').value) || 0;
+                valuesToEval = [customVal];
+            }
+
+            const parsed = math.parse(expr);
+            const compiled = parsed.compile();
+            
+            let evalTableMarkdown = "\\begin{array}{|c|c|}\n\\hline\n x & f(x) \\\\\n\\hline\n";
+
+            valuesToEval.forEach(xVal => {
+                let yVal;
+                try {
+                    yVal = compiled.evaluate({ x: xVal });
+                    if (typeof yVal === 'number') yVal = Math.round(yVal * 1000) / 1000;
+                } catch (e) {
+                    yVal = "\\text{Indefinido}";
+                }
+                evalTableMarkdown += ` ${xVal} & ${yVal} \\\\\n`;
+
+                steps.push({
+                    title: `Evaluación para x = ${xVal}`,
+                    explanation: `Sustituyendo $x = ${xVal}$ en $f(x)$:`,
+                    formula: `f(${xVal}) = ${toLaTeX(expr.replace(/x/g, `(${xVal})`))} = ${yVal}`
+                });
+            });
+
+            evalTableMarkdown += "\\hline\n\\end{array}";
+
+            steps.push({
+                title: "Tabla de Valores Generada",
+                explanation: "Resumen tabulado de pares ordenados $(x, f(x))$.",
+                formula: evalTableMarkdown
+            });
+
+            return { steps, finalResultLaTeX: "f(x) = " + toLaTeX(expr) };
+        }
+
+        // 4. LÍMITES
+        function solveLimits(expr) {
+            const steps = [];
+            let targetStr = document.getElementById('limitTarget').value.trim() || '0';
+            
+            steps.push({
+                title: "Planteamiento del Límite",
+                explanation: "Se evalúa la tendencia de la función cuando la variable se aproxima al valor objetivo.",
+                formula: `\\lim_{{x \\to ${toLaTeX(targetStr)}}} \\left( ${toLaTeX(expr)} \\right)`
+            });
+
+            // Paso 1: Sustitución directa
+            let targetVal = targetStr;
+            if (targetStr === 'infinity') targetVal = 1e6;
+            else if (targetStr === '-infinity') targetVal = -1e6;
+            else if (targetStr === 'pi') targetVal = Math.PI;
+            else if (targetStr === 'e') targetVal = Math.E;
+            else targetVal = parseFloat(targetStr) || 0;
+
+            steps.push({
+                title: "1. Sustitución Directa",
+                explanation: "Se realiza la evaluación inicial reemplazando directamente el valor de la tendencia.",
+                formula: `f(${targetStr}) = ${toLaTeX(expr.replace(/x/g, `(${targetStr})`))}`
+            });
+
+            // Cálculo usando Algebrite o simplificación algebraica previa
+            let limResult = '';
+            try {
+                let simplified = Algebrite.run(`simplify(${expr})`).toString();
+                if (simplified !== expr) {
+                    steps.push({
+                        title: "2. Factorización y Cancelación de Indeterminación (0/0)",
+                        explanation: "Se factoriza para simplificar el factor indeterminado.",
+                        formula: `\\lim_{{x \\to ${toLaTeX(targetStr)}}} \\left( ${toLaTeX(simplified)} \\right)`
+                    });
+                }
+                
+                // Evaluar en math.js
+                const parsed = math.parse(simplified);
+                const compiled = parsed.compile();
+                let res = compiled.evaluate({ x: targetVal });
+                
+                if (Math.abs(res) > 1e5) limResult = '\\infty';
+                else if (Math.abs(res) < 1e-5 && res !== 0) limResult = '0';
+                else limResult = Math.round(res * 10000) / 10000;
+
+            } catch (e) {
+                limResult = "Límite Existente / Evaluar por L'Hôpital";
+            }
+
+            steps.push({
+                title: "Resultado del Límite",
+                explanation: "Conclusión tras resolver la indeterminación o evaluación directa.",
+                formula: `\\lim_{{x \\to ${toLaTeX(targetStr)}}} \\left( ${toLaTeX(expr)} \\right) = ${limResult}`
+            });
+
+            return { steps, finalResultLaTeX: `L = ${limResult}` };
+        }
+
+        // 5. DERIVADAS
+        function solveDerivatives(expr) {
+            const steps = [];
+            const variable = document.getElementById('derivVar').value.trim() || 'x';
+
+            steps.push({
+                title: "Expresión a Derivar",
+                explanation: `Se aplicarán las reglas de derivación con respecto a $${variable}$.`,
+                formula: `f(${variable}) = ` + toLaTeX(expr)
+            });
+
+            let derivResult = Algebrite.run(`d(${expr}, ${variable})`).toString();
+
+            steps.push({
+                title: "Aplicación de Reglas de Derivación",
+                explanation: "Se aplican las reglas correspondientes (regla de la potencia, producto, cociente o cadena).",
+                formula: `\\frac{d}{d${variable}}\\left(${toLaTeX(expr)}\\right) = ${toLaTeX(derivResult)}`,
+                usedFormula: "\\frac{d}{dx}[x^n] = n \\cdot x^{n-1}, \\quad \\frac{d}{dx}[u \\cdot v] = u'v + uv'"
+            });
+
+            let simplifiedDeriv = Algebrite.run(`simplify(${derivResult})`).toString();
+            let factoredDeriv = Algebrite.run(`factor(${simplifiedDeriv})`).toString();
+
+            steps.push({
+                title: "Simplificación y Factorización de la Derivada",
+                explanation: "Se simplifica el resultado ordenando los términos de mayor a menor grado.",
+                formula: `f'(${variable}) = ${toLaTeX(factoredDeriv)}`
+            });
+
+            return { steps, finalResultLaTeX: `f'(${variable}) = ${toLaTeX(factoredDeriv)}` };
+        }
+
+        // 6. INTEGRALES
+        function solveIntegrals(expr) {
+            const steps = [];
+            const type = document.querySelector('input[name="integralType"]:checked')?.value || 'indefinite';
+
+            let integralResult = Algebrite.run(`integral(${expr}, x)`).toString();
+
+            if (type === 'indefinite') {
+                steps.push({
+                    title: "Planteamiento de Integral Indefinida",
+                    explanation: "Búsqueda de la familia de antiderivadas.",
+                    formula: `\\int \\left( ${toLaTeX(expr)} \\right) dx`
+                });
+
+                steps.push({
+                    title: "Integración Término a Término",
+                    explanation: "Se aplican las fórmulas fundamentales de integración.",
+                    formula: `= ${toLaTeX(integralResult)} + C`,
+                    usedFormula: "\\int x^n dx = \\frac{x^{n+1}}{n+1} + C \\quad (n \\neq -1)"
+                });
+
+                return { steps, finalResultLaTeX: `\\int f(x)dx = ${toLaTeX(integralResult)} + C` };
+            } else {
+                const aStr = document.getElementById('limitA').value.trim() || '0';
+                const bStr = document.getElementById('limitB').value.trim() || '1';
+
+                const aVal = parseFloat(aStr) || 0;
+                const bVal = parseFloat(bStr) || 0;
+
+                steps.push({
+                    title: "Planteamiento de Integral Definida",
+                    explanation: "Cálculo del área acumulada entre los límites $a$ y $b$.",
+                    formula: `\\int_{{${aStr}}}^{{${bStr}}} \\left( ${toLaTeX(expr)} \\right) dx`
+                });
+
+                steps.push({
+                    title: "1. Obtención de la Antiderivada F(x)",
+                    explanation: "Se calcula primero la antiderivada general $F(x)$.",
+                    formula: `F(x) = ${toLaTeX(integralResult)}`
+                });
+
+                // Teorema Fundamental del Cálculo F(b) - F(a)
+                const parsed = math.parse(integralResult);
+                const compiled = parsed.compile();
+                const Fb = compiled.evaluate({ x: bVal });
+                const Fa = compiled.evaluate({ x: aVal });
+                const totalArea = Fb - Fa;
+
+                steps.push({
+                    title: "2. Aplicación del Teorema Fundamental del Cálculo",
+                    explanation: "Evaluación en los límites: $F(b) - F(a)$.",
+                    formula: `\\left[ ${toLaTeX(integralResult)} \\right]_{{${aStr}}}^{{${bStr}}} = F(${bStr}) - F(${aStr})`,
+                    usedFormula: "\\int_{a}^{b} f(x)dx = F(b) - F(a)"
+                });
+
+                steps.push({
+                    title: "3. Evaluación Numérica",
+                    explanation: `Sustituyendo $F(${bStr}) = ${Math.round(Fb*1000)/1000}$ y $F(${aStr}) = ${Math.round(Fa*1000)/1000}$:`,
+                    formula: `= ${Math.round(Fb*1000)/1000} - (${Math.round(Fa*1000)/1000}) = ${Math.round(totalArea*1000)/1000}`
+                });
+
+                return { steps, finalResultLaTeX: `\\int_{{${aStr}}}^{{${bStr}}} f(x)dx = ${Math.round(totalArea*1000)/1000}` };
+            }
+        }
+
+        // 7. APLICACIONES
+        function solveApplications(expr) {
+            const steps = [];
+            const type = document.getElementById('appTypeSelect')?.value || 'area';
+
+            if (type === 'area') {
+                steps.push({
+                    title: "Aplicación: Área Bajo la Curva",
+                    explanation: "Modelado geométrico utilizando cálculo integral para la función ingresada.",
+                    formula: `A = \\int_{a}^{b} f(x) dx \\quad \\text{con } f(x) = ${toLaTeX(expr)}`
+                });
+                
+                const intSol = solveIntegrals(expr);
+                return {
+                    steps: [...steps, ...intSol.steps],
+                    finalResultLaTeX: intSol.finalResultLaTeX
+                };
+            } else if (type === 'critical') {
+                steps.push({
+                    title: "Aplicación: Optimización (Puntos Críticos)",
+                    explanation: "Para hallar los máximos y mínimos, igualamos la primera derivada a cero $f'(x) = 0$.",
+                    formula: `f(x) = ${toLaTeX(expr)}`
+                });
+
+                let deriv = Algebrite.run(`d(${expr}, x)`).toString();
+                steps.push({
+                    title: "1. Obtención de la Primera Derivada",
+                    explanation: "Se calcula la tasa de cambio instantánea.",
+                    formula: `f'(x) = ${toLaTeX(deriv)}`
+                });
+
+                let roots = Algebrite.run(`roots(${deriv})`).toString();
+                steps.push({
+                    title: "2. Resolución de Puntos Críticos",
+                    explanation: "Valores de $x$ donde la pendiente de la tangente es cero.",
+                    formula: `f'(x) = 0 \\implies x = ${toLaTeX(roots)}`
+                });
+
+                return { steps, finalResultLaTeX: `x_{críticos} = ${toLaTeX(roots)}` };
+            } else {
+                steps.push({
+                    title: "Aplicación: Modelo de Crecimiento / Decaimiento",
+                    explanation: "Resolución de ecuación diferencial de cambio proporcional.",
+                    formula: `P(t) = P_0 e^{kt}`
+                });
+                steps.push({
+                    title: "Evaluación del Modelo Tasa Continua",
+                    explanation: "Se sustituye la tasa de crecimiento continuo en la expresión dada.",
+                    formula: `P(t) = ${toLaTeX(expr)}`
+                });
+                return { steps, finalResultLaTeX: `P(t) = ${toLaTeX(expr)}` };
+            }
+        }
+
+        // Auxiliar: Convertir cadenas matematicas comunes a LaTeX
+        function toLaTeX(str) {
+            if (!str) return '';
+            try {
+                return math.parse(str.toString()).toTex({ parenthesis: 'keep' });
+            } catch (e) {
+                return str.toString()
+                    .replace(/\*/g, ' \\cdot ')
+                    .replace(/sqrt\((.*?)\)/g, '\\sqrt{$1}')
+                    .replace(/pi/g, '\\pi');
+            }
+        }
+
+        // RENDERIZADO EN PANTALLA DE RESULTADOS
+        function renderResults(steps, finalResult) {
+            const resultsSec = document.getElementById('resultsSection');
+            const finalMath = document.getElementById('finalResultMath');
+            const container = document.getElementById('stepsContainer');
+            const badge = document.getElementById('stepCountBadge');
+
+            resultsSec.classList.remove('hidden');
+            badge.innerText = `${steps.length} Paso${steps.length > 1 ? 's' : ''}`;
+
+            finalMath.innerHTML = `\\[ ${finalResult} \\]`;
+
+            container.innerHTML = '';
+            steps.forEach((step, idx) => {
+                const stepEl = document.createElement('div');
+                stepEl.className = "step-card bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-2 relative pl-12";
+                
+                stepEl.innerHTML = `
+                    <div class="absolute left-3 top-4 w-6 h-6 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center font-bold text-xs border border-cyan-500/30">
+                        ${idx + 1}
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-sm text-cyan-300">${step.title}</h4>
+                        ${step.usedFormula ? `<span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">Fórmula Aplicada</span>` : ''}
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">${step.explanation}</p>
+                    ${step.usedFormula ? `
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800/80 text-xs text-amber-300 font-mono overflow-x-auto">
+                            $$\\text{Fórmula: } ${step.usedFormula}$$
+                        </div>
+                    ` : ''}
+                    <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/50 overflow-x-auto text-sm sm:text-base text-slate-100 font-mono">
+                        \\[ ${step.formula} \\]
+                    </div>
+                `;
+                container.appendChild(stepEl);
+            });
+
+            // Re-renderizar fórmulas con MathJax
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+
+            // Scroll suave hacia los resultados
+            resultsSec.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderError(msg) {
+            const resultsSec = document.getElementById('resultsSection');
+            const finalMath = document.getElementById('finalResultMath');
+            const container = document.getElementById('stepsContainer');
+
+            resultsSec.classList.remove('hidden');
+            finalMath.innerHTML = `<span class="text-rose-400 text-base"><i class="fa-solid fa-triangle-exclamation mr-2"></i> ${msg}</span>`;
+            container.innerHTML = '<div class="text-xs text-slate-400 p-4 text-center">Revisa que la expresión no contenga sintaxis o paréntesis desbalanceados.</div>';
+        }
+
+        // Modales (Información / Ejemplos)
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Inicialización
+        window.onload = function() {
+            selectCategory('arithmetic');
+        };
+    </script>
 </body>
 </html>
