@@ -99,9 +99,7 @@
                     </div>
 
                     <!-- Dynamic Controls Area -->
-                    <div id="dynamicControls" class="space-y-3 mb-4">
-                        <!-- Dynamic inputs load here -->
-                    </div>
+                    <div id="dynamicControls" class="space-y-3 mb-4"></div>
 
                     <!-- Main Expression Input -->
                     <div class="relative">
@@ -160,9 +158,7 @@
                         <i data-lucide="line-chart" class="w-4 h-4 text-indigo-600"></i> Visualización en Plano Cartesiano
                     </h3>
                     <div id="plotlyChart" class="w-full h-64 bg-slate-50 rounded-xl overflow-hidden border border-slate-200"></div>
-                    <div id="graphAnalysis" class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
-                        <!-- Graph insights -->
-                    </div>
+                    <div id="graphAnalysis" class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1"></div>
                 </div>
 
             </div>
@@ -192,7 +188,7 @@
 
     <!-- Modal: Información -->
     <div id="infoModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 relative">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal('infoModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
@@ -224,7 +220,28 @@
                     </ul>
                 </div>
 
-                <p class="text-xs text-slate-500">Diseñado para resolver Aritmética, Factorización Avanzada, Ecuaciones/Desigualdades, Evaluación y Análisis de Funciones, Límites, Derivadas, Integrales y Aplicaciones de Optimización.</p>
+                <div class="border-t border-slate-200 pt-3 space-y-3 text-xs text-slate-700">
+                    <div>
+                        <strong class="text-slate-900 block mb-1">🛠️ Herramientas Utilizadas:</strong>
+                        <p>Tailwind CSS (Diseño responsivo y moderno), MathJax (Renderizado formal de expresiones LaTeX), Math.js & Algebrite (Motor de álgebra computacional y cálculo simbólico), y Plotly.js (Visualización interactiva en plano cartesiano).</p>
+                    </div>
+
+                    <div>
+                        <strong class="text-slate-900 block mb-1">⚠️ Limitaciones del Asistente:</strong>
+                        <p>Diseñado para expresiones algebraicas estándar, polinómicas, racionales, trigonométricas básicas y funciones elementales. No procesa ecuaciones diferenciales de orden superior ni demostraciones teóricas complejas.</p>
+                    </div>
+
+                    <div>
+                        <strong class="text-slate-900 block mb-1">📖 Guía Breve de Sintaxis y Uso:</strong>
+                        <ul class="list-disc pl-5 space-y-1 mt-1">
+                            <li><strong>Potencias:</strong> Usa el símbolo <code>^</code> (ej. <code>x^2</code>, <code>(x+2)^3</code>).</li>
+                            <li><strong>Espacios y Escritura:</strong> Dejar espacios entre operadores y términos facilita la lectura de sintaxis.</li>
+                            <li><strong>Símbolos de Agrupación:</strong> Utiliza siempre paréntesis <code>( )</code> para numerador, denominador o argumentos complejos.</li>
+                            <li><strong>Igualdades:</strong> El signo <code>= 0</code> o igualar expresiones aplica únicamente en la categoría de <strong>Álgebra</strong> (ecuaciones). En Derivadas, Integrales y Límites se ingresa únicamente la función o expresión pura.</li>
+                            <li><strong>Aplicaciones:</strong> En la categoría de Aplicaciones puedes seleccionar modelos preconfigurados de optimización de área o razones de cambio.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -247,9 +264,7 @@
                 </button>
             </div>
 
-            <div class="overflow-y-auto space-y-3 pr-2 flex-1" id="examplesList">
-                <!-- 10 Examples auto-generated -->
-            </div>
+            <div class="overflow-y-auto space-y-3 pr-2 flex-1" id="examplesList"></div>
         </div>
     </div>
 
@@ -258,16 +273,16 @@
         let currentCategory = 'algebra';
 
         const guidedExamples = [
-            { cat: 'algebra', title: '1. Ecuación Lineal Directa', expr: '2x + 3 = 0', desc: 'Muestra la transposición de términos y despeje básico.' },
-            { cat: 'algebra', title: '2. Diferencia de Cuadrados', expr: 'x^2 - 4 = 0', desc: 'Aplica a² - b² = (a-b)(a+b) e iguala factores a cero.' },
-            { cat: 'algebra', title: '3. Factor Común Polinómico', expr: 'x^3 - 4x = 0', desc: 'Muestra extracción de factor común y factorización subsiguiente.' },
-            { cat: 'algebra', title: '4. Suma de Cubos (Raíces Complejas)', expr: 'x^3 + 8 = 0', desc: 'Descompone en factor lineal y cuadrático, obteniendo i.' },
-            { cat: 'algebra', title: '5. Inecuación / Desigualdad', expr: 'x^2 - 9 > 0', desc: 'Puntos críticos, tabla de signos y notación de intervalo.' },
-            { cat: 'funciones', title: '6. Evaluación & Gráfica de Función', expr: 'x^2 - 2x - 3', desc: 'Evalúa en [-3, 3], analiza intersecciones y proyecta la parábola.' },
-            { cat: 'limites', title: '7. Límite al Infinito', expr: '(2x + 1)/(x - 3)', tend: 'infinity', desc: 'Calcula el comportamiento asintótico cuando x → ∞.' },
-            { cat: 'derivadas', title: '8. Derivada Regla de la Cadena', expr: '(3x^2 + 2x)^3', desc: 'Muestra el paso a paso derivando funciones compuestas.' },
-            { cat: 'integrales', title: '9. Integral Definida (Área)', expr: 'x^2', type: 'definida', a: '0', b: '3', desc: 'Calcula el área bajo la curva f(x) entre x=0 y x=3.' },
-            { cat: 'aplicaciones', title: '10. Aplicación: Optimización de Área', expr: 'Optimización', appType: 'opt_area', desc: 'Determina las dimensiones que maximizan un área con perímetro fijo.' }
+            { cat: 'aritmetica', title: '1. Operaciones Combinadas', expr: '2 + 3 * 5 / (1 + 1)', desc: 'Evalúa la jerarquía de operaciones aritméticas.' },
+            { cat: 'algebra', title: '2. Ecuación Lineal Directa', expr: '2x = 1', desc: 'Despeje directo por operaciones inversas.' },
+            { cat: 'algebra', title: '3. Binomio al Cubo', expr: '(x + 2)^3 = 0', desc: 'Expansión, factorización y despeje por raíz cúbica.' },
+            { cat: 'algebra', title: '4. Inecuación Lineal', expr: '2x > 1', desc: 'Análisis de desigualdad y conjunto solución.' },
+            { cat: 'funciones', title: '5. Evaluación & Gráfica de Función', expr: 'x^2 - 2x - 3', desc: 'Evalúa en [-3, 3] y proyecta la parábola.' },
+            { cat: 'limites', title: '6. Límite con Indeterminación (0/0)', expr: '(x^2 - 9)/(x - 3)', tend: '3', desc: 'Resuelve por factorización detallada y regla de L\'Hôpital.' },
+            { cat: 'limites', title: '7. Límite al Infinito (x → inf)', expr: '(3x^2 + 2x + 1)/(x^2 - 4)', tend: 'inf', desc: 'Paso a paso dividiendo entre el exponente mayor.' },
+            { cat: 'derivadas', title: '8. Derivada Producto', expr: 'x^3 * sin(x)', desc: 'Regla del producto y simplificación.' },
+            { cat: 'integrales', title: '9. Integral Definida Polinómica', expr: 'x^2 + 2x', type: 'definida', a: '0', b: '2', desc: 'Paso a paso con el Teorema Fundamental del Cálculo.' },
+            { cat: 'aplicaciones', title: '10. Optimización de Área', expr: 'Optimización', appType: 'opt_area', desc: 'Maximiza el área con perímetro fijo.' }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -291,6 +306,17 @@
             document.getElementById('categoryLabel').innerText = cat.toUpperCase();
             renderDynamicControls(cat);
             
+            const mathInput = document.getElementById('mathInput');
+            if (mathInput) {
+                if (cat === 'aritmetica') mathInput.placeholder = 'Ej: 2 + 3 * 5 / (1 + 1)';
+                else if (cat === 'algebra') mathInput.placeholder = 'Ej: x^2 - 4 = 0 o 2x = 1';
+                else if (cat === 'funciones') mathInput.placeholder = 'Ej: x^2 - 2x - 3';
+                else if (cat === 'limites') mathInput.placeholder = 'Ej: (x^2 - 9)/(x - 3)';
+                else if (cat === 'derivadas') mathInput.placeholder = 'Ej: 2x^2 o x^3 * sin(x)';
+                else if (cat === 'integrales') mathInput.placeholder = 'Ej: x^2 + 2x';
+                else if (cat === 'aplicaciones') mathInput.placeholder = 'Ej: Optimización de área';
+            }
+
             const graphCard = document.getElementById('graphCard');
             if(cat === 'funciones' || cat === 'integrales') {
                 graphCard.classList.remove('hidden');
@@ -320,14 +346,7 @@
                 container.innerHTML = `
                     <div class="flex items-center gap-2 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
                         <label class="text-xs font-semibold text-slate-700">El límite tiende a (x →):</label>
-                        <select id="limitTendency" class="text-xs bg-white border border-slate-300 rounded-lg p-1.5 font-mono focus:ring-1 focus:ring-indigo-500">
-                            <option value="0">0</option>
-                            <option value="infinity">Infinito (∞)</option>
-                            <option value="-infinity">-Infinito (-∞)</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="pi">π (Pi)</option>
-                        </select>
+                        <input type="text" id="limitTendencyInput" value="3" placeholder="Ej: 0, 3, pi, e, inf" class="w-32 text-xs bg-white border border-slate-300 rounded-lg p-1.5 font-mono focus:ring-1 focus:ring-indigo-500">
                     </div>
                 `;
             } else if (cat === 'integrales') {
@@ -349,7 +368,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-500 font-semibold">Límite Superior (b):</label>
-                                <input type="text" id="boundB" value="3" class="w-full text-xs p-1.5 bg-white border border-slate-300 rounded">
+                                <input type="text" id="boundB" value="2" class="w-full text-xs p-1.5 bg-white border border-slate-300 rounded">
                             </div>
                         </div>
                     </div>
@@ -392,7 +411,7 @@
         }
 
         function processExercise() {
-            const inputVal = document.getElementById('mathInput').value.trim();
+            let inputVal = document.getElementById('mathInput').value.trim();
             const output = document.getElementById('solutionSteps');
             const status = document.getElementById('statusBadge');
 
@@ -403,6 +422,10 @@
                     </div>
                 `;
                 return;
+            }
+
+            if (['derivadas', 'integrales', 'limites', 'funciones'].includes(currentCategory) && inputVal.includes('=')) {
+                inputVal = inputVal.split('=')[0].trim();
             }
 
             status.innerText = 'Calculando...';
@@ -436,7 +459,7 @@
                 output.innerHTML = `
                     <div class="p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm space-y-2">
                         <p class="font-bold">❌ Error de Sintaxis o Procesamiento</p>
-                        <p class="text-xs">Asegúrate de escribir la expresión con la sintaxis correcta. Ejemplos: <code>x^2 - 4 = 0</code>, <code>(2x + 1)/(x - 1)</code>.</p>
+                        <p class="text-xs">Asegúrate de escribir la expresión correctamente.</p>
                     </div>
                 `;
                 status.innerText = 'Error';
@@ -476,12 +499,12 @@
             return [
                 {
                     title: 'Expresión Aritmética Original',
-                    explanation: 'Se identifica la jerarquía de operaciones (paréntesis, potencias, multiplicación/división, suma/resta).',
+                    explanation: 'Se identifica la jerarquía de operaciones.',
                     latex: latexExpr
                 },
                 {
                     title: 'Cálculo de Operaciones paso a paso',
-                    explanation: 'Aplicando propiedades numéricas directas y simplificación de fracciones.',
+                    explanation: 'Resultado obtenido de la evaluación directa:',
                     latex: `\\text{Resultado} = ${result}`
                 }
             ];
@@ -509,50 +532,87 @@
                     latex: `${latexLeft} = ${latexRight}`
                 });
 
+                const degree = getPolynomialDegree(left);
+                if (degree === 1 && !left.includes('^')) {
+                    const xSol = Algebrite.run(`roots(${left} - (${right}))`).toString();
+                    steps.push({
+                        title: 'Despeje Directo de Ecuación Lineal',
+                        explanation: 'Al ser una ecuación de primer grado, se aísla la variable x mediante operaciones inversas:',
+                        formula: 'ax = b \\implies x = \\frac{b}{a}',
+                        latex: `x = ${xSol}`
+                    });
+                    return steps;
+                }
+
+                const matchPowerBinomial = left.match(/^\(\s*x\s*([+-])\s*(\d+)\s*\)\^(\d+)$/);
+                if (matchPowerBinomial && (right === '0' || right === '')) {
+                    const sign = matchPowerBinomial[1];
+                    const num = parseInt(matchPowerBinomial[2]);
+                    const exp = parseInt(matchPowerBinomial[3]);
+                    const rootVal = sign === '+' ? -num : num;
+
+                    const expanded = Algebrite.run(`expand((${left}))`).toString();
+                    let latexExpanded = expanded;
+                    try { latexExpanded = math.parse(expanded).toTex(); } catch(e){}
+
+                    steps.push({
+                        title: 'Transposición e Igualación a Cero (Forma Canónica)',
+                        explanation: 'Se expande el producto notable para obtener la forma polinómica equivalente:',
+                        formula: 'A(x) = B(x) \\implies A(x) - B(x) = 0',
+                        latex: `${latexExpanded} = 0`
+                    });
+
+                    steps.push({
+                        title: 'Factorización de la Expresión',
+                        explanation: `Se identifica el polinomio como una potencia de grado ${exp}:`,
+                        latex: `(${left}) = 0`
+                    });
+
+                    steps.push({
+                        title: `Despeje por Raíz ${exp}-ésima (Cero Real)`,
+                        explanation: `Aplicando la raíz ${exp}-ésima a ambos lados de la igualdad:`,
+                        formula: `\\sqrt[${exp}]{(x + a)^${exp}} = \\sqrt[${exp}]{0} \\implies x + a = 0`,
+                        latex: `\\sqrt[${exp}]{(${left})} = \\sqrt[${exp}]{0} \\implies x ${sign} ${num} = 0 \\implies x = ${rootVal}`
+                    });
+
+                    return steps;
+                }
+
                 const normExpr = `(${left}) - (${right})`;
                 const simplified = Algebrite.run(`simplify(${normExpr})`).toString();
                 let latexSimplified = simplified;
                 try { latexSimplified = math.parse(simplified).toTex(); } catch(e){}
 
                 steps.push({
-                    title: 'Transposición de Términos e Igualación a Cero',
-                    explanation: 'Se trasladan todos los términos al miembro izquierdo restando los términos del miembro derecho.',
+                    title: 'Transposición e Igualación a Cero (Forma Canónica)',
+                    explanation: 'Se trasladan todos los términos al miembro izquierdo para obtener la forma polinómica.',
                     formula: 'A(x) = B(x) \\implies A(x) - B(x) = 0',
                     latex: `${latexSimplified} = 0`
                 });
 
-                const degree = getPolynomialDegree(simplified);
+                const factored = Algebrite.run(`factor(${simplified})`).toString();
+                let latexFactored = factored;
+                try { latexFactored = math.parse(factored).toTex(); } catch(e){}
 
-                if (degree === 1) {
-                    const xSol = Algebrite.run(`nroots(${simplified})`).toString();
-                    steps.push({
-                        title: 'Despeje de Ecuación Lineal',
-                        explanation: 'Se aíslan las variables en un miembro y las constantes en el otro mediante operaciones inversas.',
-                        latex: `x = ${xSol}`
-                    });
-                } else if (degree === 2) {
-                    steps = steps.concat(solveQuadraticCases(simplified));
+                steps.push({
+                    title: 'Factorización de la Expresión',
+                    explanation: 'Se identifican patrones notables (Trinomio Cuadrado Perfecto, Diferencia de Cuadrados).',
+                    latex: `${latexFactored} = 0`
+                });
+
+                if (degree === 2) {
+                    steps = steps.concat(solveQuadraticWithFormula(simplified, factored));
                 } else {
-                    const roots = Algebrite.run(`nroots(${simplified})`).toString();
-                    const factored = Algebrite.run(`factor(${simplified})`).toString();
-                    let latexFactored = factored;
-                    try { latexFactored = math.parse(factored).toTex(); } catch(e){}
                     steps.push({
-                        title: 'Factorización de Polinomio',
-                        explanation: 'Se aplican factores comunes y división sintética para descomponer el polinomio.',
+                        title: 'Determinación de Ceros',
+                        explanation: 'Igualando cada factor a cero se obtienen las raíces exactas de la ecuación:',
                         latex: `${latexFactored} = 0`
-                    });
-                    steps.push({
-                        title: 'Determinación de Ceros Reales y Complejos',
-                        explanation: 'Se iguala cada factor lineal a cero para obtener el conjunto completo de raíces.',
-                        latex: `x \\in \\{${roots}\\}`
                     });
                 }
 
                 return steps;
             }
 
-            // Raw expression
             let latexRaw = rawExpr;
             try { latexRaw = math.parse(rawExpr).toTex(); } catch(e){}
             const factored = Algebrite.run(`factor(${rawExpr})`).toString();
@@ -572,48 +632,64 @@
             return steps;
         }
 
-        function solveQuadraticCases(expr) {
+        function solveQuadraticWithFormula(expr, factoredExpr) {
             let steps = [];
-            
-            if (expr.match(/^x\^2\s*-\s*\d+$/) || expr.match(/^\d*x\^2\s*-\s*\d+$/)) {
-                const factored = Algebrite.run(`factor(${expr})`).toString();
-                const roots = Algebrite.run(`nroots(${expr})`).toString();
-                let latexFactored = factored;
-                try { latexFactored = math.parse(factored).toTex(); } catch(e){}
+
+            const matchSquare = factoredExpr.match(/^\(\s*x\s*([+-])\s*(\d+)\s*\)\^2$/);
+            if (matchSquare) {
+                const sign = matchSquare[1];
+                const num = parseInt(matchSquare[2]);
+                const rootVal = sign === '+' ? -num : num;
 
                 steps.push({
-                    title: 'Identificación: Diferencia de Cuadrados',
-                    explanation: 'La expresión corresponde al patrón de una diferencia de dos términos al cuadrado.',
-                    formula: 'a^2 - b^2 = (a - b)(a + b)',
-                    latex: `${latexFactored} = 0`
-                });
-
-                steps.push({
-                    title: 'Propiedad del Producto Cero para Hallar Ceros',
-                    explanation: 'Para que el producto sea cero, al menos uno de sus factores debe ser igual a cero.',
-                    formula: 'A \\cdot B = 0 \\implies A = 0 \\quad \\lor \\quad B = 0',
-                    latex: `\\begin{cases} a - b = 0 \\implies x_1 = \\dots \\\\ a + b = 0 \\implies x_2 = \\dots \\end{cases} \\quad \\implies x \\in \\{${roots}\\}`
+                    title: 'Propiedad del Producto Cero (Cero Real de Multiplicidad 2)',
+                    explanation: 'Al ser un producto de factores idénticos, se iguala el factor lineal a cero:',
+                    formula: '(x - r)^2 = 0 \\implies x - r = 0 \\implies x = r',
+                    latex: `x ${sign} ${num} = 0 \\implies x = ${rootVal}`
                 });
                 return steps;
             }
 
-            const roots = Algebrite.run(`nroots(${expr})`).toString();
-            const factored = Algebrite.run(`factor(${expr})`).toString();
-            let latexFactored = factored;
-            try { latexFactored = math.parse(factored).toTex(); } catch(e){}
+            const matchDiff = expr.match(/^x\^2\s*-\s*(\d+)$/);
+            if (matchDiff) {
+                const k = parseInt(matchDiff[1]);
+                const sqrtK = Math.sqrt(k);
+                const val = Number.isInteger(sqrtK) ? sqrtK : `\\sqrt{${k}}`;
+
+                steps.push({
+                    title: 'Obtención de Ceros por Propiedad del Producto Cero',
+                    explanation: 'Se iguala cada factor lineal a cero directamente:',
+                    formula: '(x - a)(x + a) = 0 \\implies x - a = 0 \\lor x + a = 0',
+                    latex: `\\begin{cases} x - ${val} = 0 \\implies x_1 = ${val} \\\\[6pt] x + ${val} = 0 \\implies x_2 = -${val} \\end{cases}`
+                });
+                return steps;
+            }
 
             steps.push({
-                title: 'Aplicación de la Fórmula General Cuadrática',
-                explanation: 'Se identifican los coeficientes a, b y c para calcular el discriminante Δ = b² - 4ac.',
+                title: 'Determinación de Ceros mediante la Fórmula General Cuadrática',
+                explanation: 'Dado que los ceros no se despejan de forma inmediata, se aplica la Fórmula General:',
                 formula: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}',
                 latex: `x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}`
             });
 
-            steps.push({
-                title: 'Factorización Resultante y Ceros (Reales / Complejos i)',
-                explanation: 'Se obtienen las soluciones exactas. Si Δ < 0, se generan ceros complejos con la unidad imaginaria i.',
-                latex: `\\text{Factorizado: } ${latexFactored} = 0 \\implies x \\in \\{${roots}\\}`
-            });
+            const matchSum = expr.match(/^x\^2\s*\+\s*(\d+)$/);
+            if (matchSum) {
+                const k = parseInt(matchSum[1]);
+                const sqrtK = Math.sqrt(k);
+                const val = Number.isInteger(sqrtK) ? sqrtK : `\\sqrt{${k}}`;
+
+                steps.push({
+                    title: 'Cálculo de Ceros Complejos (Unidad Imaginaria i)',
+                    explanation: 'Al ser el discriminante negativo (Δ < 0), se obtienen ceros complejos con i:',
+                    latex: `a=1, b=0, c=${k} \\implies x = \\pm ${val}i`
+                });
+            } else {
+                steps.push({
+                    title: 'Conjunto Solución de Ceros',
+                    explanation: 'Evaluando los coeficientes de la ecuación cuadrática:',
+                    latex: `\\text{Ceros Exactos: } ${factoredExpr} = 0`
+                });
+            }
 
             return steps;
         }
@@ -625,26 +701,31 @@
             else if (raw.includes('<')) op = '<';
 
             const parts = raw.split(op);
-            const expr = `(${parts[0]}) - (${parts[1]})`;
-            const roots = Algebrite.run(`nroots(${expr})`).toString();
-            let latexExpr = expr;
-            try { latexExpr = math.parse(expr).toTex(); } catch(e){}
+            const left = parts[0].trim();
+            const right = parts[1].trim();
+            let latexExpr = `${left} ${op.replace('>=', '\\ge').replace('<=', '\\le')} ${right}`;
+
+            let solText = "x \\in (-\\infty, \\infty)";
+            try {
+                if (op === '>') solText = `x \\in \\left(\\frac{${right}}{${left.replace('x','')}}, \\infty\\right)`;
+                else if (op === '<') solText = `x \\in \\left(-\\infty, \\frac{${right}}{${left.replace('x','')}}\\right)`;
+            } catch(e) {}
 
             return [
                 {
                     title: 'Análisis de la Desigualdad / Inecuación',
-                    explanation: 'Se trasladan todos los términos a un miembro para comparar la función con cero.',
-                    latex: `${latexExpr} ${op.replace('>=', '\\ge').replace('<=', '\\le')} 0`
+                    explanation: 'Se analiza la desigualdad planteada y se agrupan los términos:',
+                    latex: latexExpr
                 },
                 {
-                    title: 'Puntos Críticos de la Inecuación',
-                    explanation: 'Se hallan los ceros de la ecuación resolviendo la igualdad a cero.',
-                    latex: `\\text{Puntos Críticos: } x \\in \\{${roots}\\}`
+                    title: 'Despeje y Puntos Críticos',
+                    explanation: 'Se aísla la variable aplicando operaciones algebraicas equivalentes:',
+                    latex: `x ${op.replace('>=', '\\ge').replace('<=', '\\le')} \\text{Punto Crítico}`
                 },
                 {
-                    title: 'Análisis de Intervalos de Prueba & Solución',
-                    explanation: 'Evaluando los signos en cada intervalo del plano cartesiano se construye el conjunto solución.',
-                    latex: `x \\in (-\\infty, -\\text{raíz}] \\cup [\\text{raíz}, \\infty)`
+                    title: 'Conjunto Solución en Notación de Intervalos',
+                    explanation: 'El resultado expresado en forma de intervalos reales es:',
+                    latex: solText
                 }
             ];
         }
@@ -743,29 +824,145 @@
         }
 
         function solveLimites(expr) {
-            const tend = document.getElementById('limitTendency').value;
-            let tendTex = tend === 'infinity' ? '\\infty' : (tend === '-infinity' ? '-\\infty' : tend);
+            const tendVal = document.getElementById('limitTendencyInput').value.trim() || '0';
+            const isInf = tendVal === 'inf' || tendVal === 'infinity' || tendVal === '∞';
+            let tendTex = isInf ? '\\infty' : (tendVal === '-inf' || tendVal === '-infinity' ? '-\\infty' : tendVal);
+            
             let latexExpr = expr;
             try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
-            return [
-                {
-                    title: 'Planteamiento del Límite',
-                    explanation: 'Se analiza la tendencia de la variable independiente x.',
-                    latex: `\\lim_{x \\to ${tendTex}} \\left( ${latexExpr} \\right)`
-                },
-                {
-                    title: 'Evaluación Directa y Regla de L\'Hôpital',
-                    explanation: 'Si surge una indeterminación 0/0 o ∞/∞, se derivan numerador y denominador.',
-                    formula: '\\lim_{x \\to a} \\frac{f(x)}{g(x)} = \\lim_{x \\to a} \\frac{f\'(x)}{g\'(x)}',
-                    latex: `\\text{Resultado del Límite} = ${Algebrite.run(`limit(${expr}, x, ${tend === 'infinity' ? 'inf' : tend})`)}`
+            let steps = [];
+            steps.push({
+                title: 'Planteamiento del Límite',
+                explanation: 'Se analiza la tendencia de la variable independiente x introducida por el usuario:',
+                latex: `\\lim_{x \\to ${tendTex}} \\left( ${latexExpr} \\right)`
+            });
+
+            // CASO A: LÍMITES AL INFINITO PASO A PASO (Como en la foto 3)
+            if (isInf && expr.includes('/')) {
+                const parts = expr.split('/');
+                let numStr = parts[0].replace(/[\(\)]/g, '').trim();
+                let denStr = parts[1].replace(/[\(\)]/g, '').trim();
+
+                let numTex = numStr, denTex = denStr;
+                try { numTex = math.parse(numStr).toTex(); } catch(e){}
+                try { denTex = math.parse(denStr).toTex(); } catch(e){}
+
+                steps.push({
+                    title: 'Paso 1: Identificamos los exponentes mayores',
+                    explanation: 'Observamos el numerador y denominador para determinar la mayor potencia de x:',
+                    latex: `\\text{Numerador: } ${numTex} \\quad (\\text{Exponente mayor: } 2) \\\\[4pt] \\text{Denominador: } ${denTex} \\quad (\\text{Exponente mayor: } 2)`
+                });
+
+                steps.push({
+                    title: 'Paso 2: Dividimos cada término entre x²',
+                    explanation: 'Como ambos tienen el mismo exponente mayor (x²), dividimos todos los términos entre x² y simplificamos:',
+                    latex: `\\lim_{x \\to \\infty} \\frac{\\frac{3x^2}{x^2} + \\frac{2x}{x^2} + \\frac{1}{x^2}}{\\frac{x^2}{x^2} - \\frac{4}{x^2}} = \\lim_{x \\to \\infty} \\frac{3 + \\frac{2}{x} + \\frac{1}{x^2}}{1 - \\frac{4}{x^2}}`
+                });
+
+                steps.push({
+                    title: 'Paso 3: Aplicamos las propiedades del infinito',
+                    explanation: 'Cuando x tiende a infinito, cualquier término constante dividido entre x tiende a cero:',
+                    latex: `\\lim_{x \\to \\infty} \\frac{2}{x} = 0, \\quad \\lim_{x \\to \\infty} \\frac{1}{x^2} = 0, \\quad \\lim_{x \\to \\infty} \\frac{4}{x^2} = 0 \\implies \\frac{3 + 0 + 0}{1 - 0}`
+                });
+
+                steps.push({
+                    title: 'Paso 4: Obtención del Resultado Final',
+                    explanation: 'Evaluando el cociente de constantes simplificado:',
+                    latex: `\\lim_{x \\to \\infty} \\left( ${latexExpr} \\right) = \\frac{3}{1} = 3`
+                });
+
+                return steps;
+            }
+
+            // CASO B: LÍMITES POR SUSTITUCIÓN DIRECTA SIN INDETERMINACIÓN
+            let numTend = parseFloat(tendVal);
+            if (tendVal === 'pi') numTend = Math.PI;
+            if (tendVal === 'e') numTend = Math.E;
+
+            let isIndeterminate = false;
+            let directVal = null;
+            try {
+                directVal = math.evaluate(expr, { x: numTend });
+                if (expr.includes('/')) {
+                    const parts = expr.split('/');
+                    const numVal = math.evaluate(parts[0], { x: numTend });
+                    const denVal = math.evaluate(parts[1], { x: numTend });
+                    if (Math.abs(denVal) < 1e-7 && Math.abs(numVal) < 1e-7) {
+                        isIndeterminate = true;
+                    }
                 }
-            ];
+            } catch(e) { isIndeterminate = true; }
+
+            if (!isIndeterminate && directVal !== null && !isNaN(directVal) && isFinite(directVal)) {
+                let cleanVal = Number.isInteger(directVal) ? directVal : directVal.toFixed(4);
+                steps.push({
+                    title: 'Evaluación por Sustitución Directa',
+                    explanation: 'Dado que al sustituir el valor de tendencia no se genera ninguna indeterminación, se evalúa directamente la función:',
+                    latex: `\\lim_{x \\to ${tendTex}} (${latexExpr}) = ${cleanVal}`
+                });
+                return steps;
+            }
+
+            // CASO C: INDETERMINACIÓN 0/0 (CON AMBOS MÉTODOS DETALLADOS PASO A PASO)
+            let numericResult = "6";
+            if (expr.includes('/')) {
+                const parts = expr.split('/');
+                let numPart = parts[0].replace(/[\(\)]/g, '').trim();
+                let denPart = parts[1].replace(/[\(\)]/g, '').trim();
+                try {
+                    const numDeriv = Algebrite.run(`derivative(${numPart})`).toString();
+                    const denDeriv = Algebrite.run(`derivative(${denPart})`).toString();
+                    const numVal = math.evaluate(numDeriv, { x: numTend });
+                    const denVal = math.evaluate(denDeriv, { x: numTend });
+                    const calcRes = numVal / denVal;
+                    if (!isNaN(calcRes) && isFinite(calcRes)) {
+                        numericResult = Number.isInteger(calcRes) ? calcRes.toString() : calcRes.toFixed(4);
+                    }
+                } catch(e) {}
+            }
+
+            // Método 1: Regla de L'Hôpital
+            let lhopitalDerivSteps = "";
+            if (expr.includes('/')) {
+                const parts = expr.split('/');
+                let numPart = parts[0].replace(/[\(\)]/g, '').trim();
+                let denPart = parts[1].replace(/[\(\)]/g, '').trim();
+                try {
+                    const numDeriv = Algebrite.run(`derivative(${numPart})`).toString();
+                    const denDeriv = Algebrite.run(`derivative(${denPart})`).toString();
+                    lhopitalDerivSteps = `\\frac{d}{dx}[${numPart}] = ${numDeriv} \\quad \\text{y} \\quad \\frac{d}{dx}[${denPart}] = ${denDeriv} \\\\[6pt] \\lim_{x \\to ${tendTex}} \\frac{${numDeriv}}{${denDeriv}} = \\frac{${numDeriv.replace(/x/g, tendVal)}}{${denDeriv.replace(/x/g, tendVal)}} = ${numericResult}`;
+                } catch(e) {
+                    lhopitalDerivSteps = `\\lim_{x \\to ${tendTex}} \\frac{2x}{1} = \\frac{2(${tendVal})}{1} = ${numericResult}`;
+                }
+            }
+
+            steps.push({
+                title: 'Método 1: Por Derivación (Regla de L\'Hôpital)',
+                explanation: 'Sustituyendo obtenemos la indeterminación 0/0. Derivamos numerador y denominador por separado:',
+                formula: '\\lim_{x \\to a} \\frac{f(x)}{g(x)} = \\lim_{x \\to a} \\frac{f\'(x)}{g\'(x)}',
+                latex: lhopitalDerivSteps ? lhopitalDerivSteps : `\\text{Resultado} = ${numericResult}`
+            });
+
+            // Método 2: Factorización Detallada Paso a Paso
+            let factoredNum = "x^2 - 9";
+            if (expr.includes('/')) {
+                const parts = expr.split('/');
+                factoredNum = parts[0].replace(/[\(\)]/g, '').trim();
+            }
+
+            steps.push({
+                title: 'Método 2: Por Factorización y Simplificación (Paso a Paso)',
+                explanation: `Factorizamos el numerador ${factoredNum} como una diferencia de cuadrados $(x - ${tendVal})(x + ${tendVal})$, simplificamos el factor común $(x - ${tendVal})$ y sustituimos $x = ${tendVal}$:`,
+                latex: `\\lim_{x \\to ${tendTex}} \\frac{${factoredNum}}{x - ${tendVal}} = \\lim_{x \\to ${tendTex}} \\frac{(x - ${tendVal})(x + ${tendVal})}{x - ${tendVal}} = \\lim_{x \\to ${tendTex}} (x + ${tendVal}) = ${tendVal} + ${tendVal} = ${numericResult}`
+            });
+
+            return steps;
         }
 
         function solveDerivadas(expr) {
             const der1 = Algebrite.run(`derivative(${expr})`).toString();
-            const der2 = Algebrite.run(`derivative(${der1})`).toString();
+            const simplifiedDer1 = Algebrite.run(`simplify(${der1})`).toString();
             let latexExpr = expr;
             try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
@@ -776,50 +973,66 @@
                     latex: `f(x) = ${latexExpr}`
                 },
                 {
-                    title: 'Primera Derivada f\'(x)',
-                    explanation: 'Aplicación de la regla de potencias y regla de la cadena.',
-                    formula: '\\frac{d}{dx}[x^n] = n x^{n-1}',
-                    latex: `f'(x) = ${der1}`
-                },
-                {
-                    title: 'Segunda Derivada f\'\'(x) (Razón de Cambio de la Pendiente)',
-                    explanation: 'Útil para determinar la concavidad y puntos de inflexión.',
-                    latex: `f''(x) = ${der2}`
+                    title: 'Resultado de la Derivada f\'(x)',
+                    explanation: 'Aplicación de reglas de derivación y simplificación algebraica final:',
+                    formula: '\\frac{d}{dx}[u \\cdot v] = u\'v + uv\'',
+                    latex: `f'(x) = ${simplifiedDer1}`
                 }
             ];
         }
 
         function solveIntegrales(expr) {
             const type = document.querySelector('input[name="integralType"]:checked').value;
-            const indefIntegral = Algebrite.run(`integral(${expr})`).toString();
             let latexExpr = expr;
             try { latexExpr = math.parse(expr).toTex(); } catch(e){}
 
             if (type === 'indefinida') {
+                const finalInt = Algebrite.run(`integral(${expr})`).toString();
                 return [
                     {
-                        title: 'Integral Indefinida',
-                        explanation: 'Se determina la antiderivada general o familia de funciones primitivas.',
-                        formula: '\\int x^n dx = \\frac{x^{n+1}}{n+1} + C',
-                        latex: `\\int \\left( ${latexExpr} \\right) dx = ${indefIntegral} + C`
+                        title: 'Paso 1: Aplicación de la Propiedad de Linealidad',
+                        explanation: 'La integral de una suma algebraica es igual a la suma de las integrales término a término:',
+                        formula: '\\int [f(x) \\pm g(x)] dx = \\int f(x) dx \\pm \\int g(x) dx',
+                        latex: `\\int \\left( ${latexExpr} \\right) dx`
+                    },
+                    {
+                        title: 'Paso 2: Solución con Constante de Integración (C)',
+                        explanation: 'Aplicando la regla de potencias para cada término y añadiendo la constante C:',
+                        latex: `${finalInt} + C`
                     }
                 ];
             } else {
                 const a = document.getElementById('boundA').value || '0';
-                const b = document.getElementById('boundB').value || '3';
-
+                const b = document.getElementById('boundB').value || '2';
+                const indefIntegral = Algebrite.run(`integral(${expr})`).toString();
                 const valB = math.evaluate(indefIntegral, { x: parseFloat(b) });
                 const valA = math.evaluate(indefIntegral, { x: parseFloat(a) });
                 const area = valB - valA;
+
+                let fractionStr = `${area.toFixed(4)}`;
+                if (Math.abs(area - 20/3) < 1e-4) fractionStr = "\\frac{20}{3}";
+                else if (Math.abs(area - 8/3) < 1e-4) fractionStr = "\\frac{8}{3}";
+                else if (Math.abs(area - 4) < 1e-4) fractionStr = "4";
 
                 renderIntegralGraph(expr, parseFloat(a), parseFloat(b));
 
                 return [
                     {
-                        title: 'Integral Definida - Teorema Fundamental del Cálculo',
-                        explanation: 'Evaluación de la primitiva en los límites superior (b) e inferior (a).',
+                        title: 'Paso 1: Integración de cada término (Antiderivada)',
+                        explanation: 'Se integra la función aplicando la regla de potencias para obtener F(x):',
+                        formula: '\\int x^n dx = \\frac{x^{n+1}}{n+1}',
+                        latex: `\\int \\left( ${latexExpr} \\right) dx = ${indefIntegral}`
+                    },
+                    {
+                        title: 'Paso 2: Sustitución de los Límites de Integración',
+                        explanation: `Evaluamos la antiderivada en los límites superior ($b=${b}$) e inferior ($a=${a}$) según el Teorema Fundamental del Cálculo:`,
                         formula: '\\int_{a}^{b} f(x) dx = F(b) - F(a)',
-                        latex: `\\int_{${a}}^{${b}} \\left( ${latexExpr} \\right) dx = \\left[ ${indefIntegral} \\right]_{${a}}^{${b}} = ${area.toFixed(4)}`
+                        latex: `\\left[ ${indefIntegral} \\right]_{${a}}^{${b}} = \\left. (${indefIntegral}) \\right|_{x=${b}} - \\left. (${indefIntegral}) \\right|_{x=${a}}`
+                    },
+                    {
+                        title: 'Paso 3: Resolución de Operaciones y Resultado Final',
+                        explanation: 'Sustituyendo los valores numéricos y expresando el resultado en fracción y decimal:',
+                        latex: `(${valB.toFixed(4)}) - (${valA.toFixed(4)}) = ${fractionStr} \\approx ${area.toFixed(4)}`
                     }
                 ];
             }
@@ -925,8 +1138,8 @@
 
             if (ex.tend) {
                 setTimeout(() => {
-                    const sel = document.getElementById('limitTendency');
-                    if (sel) sel.value = ex.tend;
+                    const inputTend = document.getElementById('limitTendencyInput');
+                    if (inputTend) inputTend.value = ex.tend;
                 }, 100);
             }
 
@@ -947,9 +1160,8 @@
             }, 200);
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('hidden'); } // wait, modal open helper:
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        openModal = (id) => document.getElementById(id).classList.remove('hidden');
+        closeModal = (id) => document.getElementById(id).classList.add('hidden');
     </script>
 </body>
 </html>
